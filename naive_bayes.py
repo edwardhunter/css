@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
 """
-@package css.template_supervised
-@file css/template_supervised.py
+@package css.naive_bayes
+@file css/naive_bayes.py
 @author Edward Hunter
 @author K Sree Harsha
 @author Your Name Here
-@brief A template to be customized for supervised learning experiments.
+@brief Naive Bayes supervised learning and evaluation methods.
 """
 
 # Import common modules and utilities.
 from common import *
 
 # Define method and models available.
-METHOD = ''
-MODELS = ()
+METHOD = 'Naive_Bayes'
+MODELS = ('Bernoulli','Multinomial','TFIDF')
 
 
 def train(data, dataset, model, **kwargs):
@@ -47,25 +47,45 @@ def train(data, dataset, model, **kwargs):
     ############################################################
     # Create feature extractor, classifier.
     ############################################################
-    # TODO
+    if model == 'Bernoulli':
+        vectorizer = CountVectorizer(stop_words='english', binary=True)
+        clf=BernoulliNB(alpha=.01)
+
+    elif model == 'Multinomial':
+        vectorizer = CountVectorizer(stop_words='english')
+        clf=MultinomialNB(alpha=.01)
+
+    elif model == 'TFIDF':
+        vectorizer = TfidfVectorizer(stop_words='english')
+        clf=MultinomialNB(alpha=.01)
     ############################################################
 
     ############################################################
     # If specified, create feature dimension reducer.
     ############################################################
-    # TODO
+    dim = kwargs.get('dim', None)
+    if dim:
+        fselector = SelectKBest(chi2, k=dim)
     ############################################################
 
     ############################################################
     # Extract features, reducing dimension if specified.
     ############################################################
-    # TODO
+    print 'Extracting text features...'
+    start = time.time()
+    x_train = vectorizer.fit_transform(data_train)
+    if dim:
+        x_train = fselector.fit_transform(x_train, data_train_target)
+    print 'Extracted in %f seconds.' % (time.time() - start)
     ############################################################
 
     ############################################################
     # Train classifier.
     ############################################################
-    # TODO
+    print 'Training classifier...'
+    start = time.time()
+    clf.fit(x_train, data_train_target)
+    print 'Trained in %f seconds.' % (time.time() - start)
     ############################################################
 
     # Create classifier and feature extractor file names.
@@ -90,7 +110,7 @@ def train(data, dataset, model, **kwargs):
         fhandle = open(dfname,'w')
         pickle.dump(fselector, fhandle)
         fhandle.close()
-        print 'Feature selector written to file %s' % (dfname)
+        print 'Feature selector written to file %s' % (vfname)
 
 def predict(input_data, cfname, vfname, **kwargs):
     """
@@ -148,7 +168,10 @@ def predict(input_data, cfname, vfname, **kwargs):
     ############################################################
     # Compute features and predict.
     ############################################################
-    # TODO
+    x_test = vectorizer.transform(input_data)
+    if dfname:
+        x_test = fselector.transform(x_test)
+    pred = clf.predict(x_test)
     ############################################################
 
     # Return vector of predicted labels.
@@ -197,7 +220,10 @@ def eval(data, dataset, model, **kwargs):
     ############################################################
     # Evaluate predictions: metrics.
     ############################################################
-    # TODO: create values for f1, precision, recall, conf_matrix
+    f1 = metrics.f1_score(data_test_target, pred)
+    precision = metrics.precision_score(data_test_target, pred)
+    recall = metrics.recall_score(data_test_target, pred)
+    conf_matrix = confusion_matrix(data_test_target ,pred)
     ############################################################
 
     # Print evaluation data.

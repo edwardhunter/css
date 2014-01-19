@@ -9,14 +9,8 @@
 text datasets.
 """
 
-# Import scikit modules.
-from sklearn.datasets import fetch_20newsgroups
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
-from scipy.linalg import norm
-from math import sqrt
-from sklearn.preprocessing import normalize
+from common import *
+
 MODELS = ('Bernoulli','Multinomial','TFIDF')
 
 
@@ -25,15 +19,10 @@ def show_features(data, dataset, model, idx=[0]):
     Print out example computed features for specified training data.
     This allows us to visualize that the features are
     computed correctly.
-    @param data training and testing dataset dictionary.
-    @param dataset dataset name, valid key to data.
-    @param model one of ('Bernoulli','Multinomial','TFIDF')
-    @param idx optional list of training data features to print. Default [0].
-    Examples:
-    show_features(data, '20news', 'Bernoulli', [0, 20, 40])
-    show_features(data, '20news', 'Multinomial', [0, 20, 40])
-    show_features(data, 'reuters', 'Bernoulli', [0, 20, 40])
-    show_features(data, 'reuters', 'Multinomial', [0, 20, 40])
+    @param: data training and testing dataset dictionary.
+    @param: dataset dataset name, valid key to data.
+    @param: model one of ('Bernoulli','Multinomial','TFIDF')
+    @param: idx optional list of training data features to print. Default [0].
     """
 
     # Verify input parameters.
@@ -82,10 +71,6 @@ def show_features(data, dataset, model, idx=[0]):
         print '-'*80
         print model + ' feature:'
         print x_train[i,:]
-        xx = x_train[i, :].copy()
-        xn = normalize(xx, norm='l2')
-        print xn
-        #print str(np.linalg.norm(x_train[i,:]))
     print '-'*80
 
 
@@ -98,12 +83,8 @@ def load_data():
     data = {}
 
     # Fetch the 20 newsgroup data, removing headers, footers, quotes.
-    categories = ['comp.os.ms-windows.misc',
-                  'rec.sport.hockey'
-                  ]
     categories = None
     remove = ('headers', 'footers', 'quotes')
-    #remove = ()
     news_data_train = fetch_20newsgroups(subset='train', categories=categories,
                                 shuffle=True, random_state=42,
                                 remove=remove)
@@ -137,34 +118,3 @@ def load_data():
     return data
 
 data = load_data()
-
-
-"""
-vec = TfidfVectorizer(stop_words='english')
-
-train_data = data['20news']['train']
-train_target = data['20news']['train_target']
-
-x_train = vec.fit_transform(train_data)
-
-print str(x_train.shape)
-xx = x_train[0,:].copy()
-yy = xx.copy()
-print str(xx.shape)
-print str(yy.shape)
-print type(xx)
-zz = xx.dot(yy.transpose())
-print str(zz.shape)
-print str(zz[0,0])
-print xx
-#n = sqrt(xx.transpose(copy=True).dot(xx))
-#print str(n)
-
-nn = 0.0
-(r,c) = xx.shape
-print str(r)
-print str(c)
-for i in range(c):
-    nn += xx[0,i]**2
-print str(nn)
-"""
