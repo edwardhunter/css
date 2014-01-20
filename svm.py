@@ -316,12 +316,12 @@ if __name__ == '__main__':
 
     # Get svm options.
     svm_kwargs = {}
-    svm_kwargs['svm_c'] = float(opts.svm_c)
-    svm_kwargs['svm_tol'] = float(opts.svm_tol)
-    svm_kwargs['svm_max_iter'] = int(opts.svm_max_iter)
-    svm_kwargs['svm_degree'] = int(opts.svm_degree)
-    svm_kwargs['svm_gamma'] = float(opts.svm_gamma)
-    svm_kwargs['svm_coef0'] = float(opts.svm_coef0)
+    svm_kwargs['svm_c'] = opts.svm_c
+    svm_kwargs['svm_tol'] = opts.svm_tol
+    svm_kwargs['svm_max_iter'] = opts.svm_max_iter
+    svm_kwargs['svm_degree'] = opts.svm_degree
+    svm_kwargs['svm_gamma'] = opts.svm_gamma
+    svm_kwargs['svm_coef0'] = opts.svm_coef0
 
     # Load data.
     data = load_data()
