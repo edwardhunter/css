@@ -11,8 +11,7 @@ text datasets.
 
 from common import *
 
-MODELS = ('Bernoulli','Multinomial','TFIDF')
-
+datasets = ('20news')
 
 def show_features(data, dataset, model, idx=[0]):
     """
@@ -83,6 +82,12 @@ def load_data():
     data = {}
 
     # Fetch the 20 newsgroup data, removing headers, footers, quotes.
+    categories = [
+        'alt.atheism',
+        'talk.religion.misc',
+        'comp.graphics',
+        'sci.space',
+    ]
     categories = None
     remove = ('headers', 'footers', 'quotes')
     news_data_train = fetch_20newsgroups(subset='train', categories=categories,
@@ -116,5 +121,3 @@ def load_data():
 
     # Return the data dictionary.
     return data
-
-data = load_data()

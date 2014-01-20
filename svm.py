@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 
 """
-@package css.neighbors
-@file css/neighbors.py
+@package css.svm
+@file css/svm.py
 @author Edward Hunter
 @author K Sree Harsha
 @author Your Name Here
-@brief Nearest neighbor and nearest centroid supervised learning
-and evaluation methods.
+@brief Support vector machine supervised learning and evaluation methods.
 """
 
 # Import common modules and utilities.
 from common import *
 
 # Define method and models available.
-METHOD = 'Neighbors'
-MODELS = ('KNN','Centroid')
+METHOD = 'SVM'
+MODELS = ('linear','poly','rbf')
 
+# Good results using default linear kernel and
+# rbf with svm_c=8 and svm_gamma=0.5.
+# Grid search would be valuable in this lab.
 
 def train(data, dataset, model, **kwargs):
     """
@@ -49,10 +51,20 @@ def train(data, dataset, model, **kwargs):
     # Create feature extractor, classifier.
     ############################################################
     vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True)
-    if model == 'KNN':
-        clf = KNeighborsClassifier()
-    elif model == 'Centroid':
-        clf = NearestCentroid()
+    svm_c = kwargs.get('svm_c', 1.0)
+    svm_tol = kwargs.get('svm_tol', 1e-3)
+    svm_max_iter = kwargs.get('svm_max_iter', -1)
+    svm_degree = kwargs.get('svm_degree', 3)
+    svm_gamma = kwargs.get('svm_gamma', 0.0)
+    svm_coef0 = kwargs.get('svm_coef0', 0.0)
+    if model == 'linear':
+        clf = SVC(kernel='linear', C=svm_c, tol=svm_tol, max_iter=svm_max_iter)
+    elif model == 'poly':
+        clf = SVC(kernel='poly', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
+            degree=svm_degree, gamma=svm_gamma, coef0=svm_coef0)
+    elif model == 'rbf':
+        clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
+            gamma=svm_gamma)
     ############################################################
 
     ############################################################
@@ -71,7 +83,6 @@ def train(data, dataset, model, **kwargs):
     x_train = vectorizer.fit_transform(data_train)
     if dim:
         x_train = fselector.fit_transform(x_train, data_train_target)
-        x_train = normalize(x_train)
     print 'Extracted in %f seconds.' % (time.time() - start)
     ############################################################
 
@@ -167,7 +178,6 @@ def predict(input_data, cfname, vfname, **kwargs):
     x_test = vectorizer.transform(input_data)
     if dfname:
         x_test = fselector.transform(x_test)
-        x_test = normalize(x_test)
     pred = clf.predict(x_test)
     ############################################################
 
@@ -252,6 +262,7 @@ def eval(data, dataset, model, **kwargs):
         plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
         plt.savefig(figfname)
 
+
 if __name__ == '__main__':
 
     # Load training/testing utilities.
@@ -264,13 +275,29 @@ if __name__ == '__main__':
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-f','--fappend', action='store', dest='fappend',
                  help='File name appendix string.')
-    p.add_option('-d','--dim', action='store', dest='dim', type='int',
+    p.add_option('-d','--dim', action='store', dest='dim',
                  help='Reduced feature dimension integer.')
     p.add_option('-c', '--confusion', action='store_true',
                  dest='confusion', help='Save confusion image.')
     p.add_option('-o', '--overwrite', action='store_true',
                  dest='overwrite', help='Overwrite existing files.')
-    p.set_defaults(fappend=None, dim=None, confusion=True, overwrite=False)
+
+    # SVM options.
+    p.add_option('--svm_c', action='store', dest='svm_c', type='float',
+                 help='SVM penalty term, default=1.0.')
+    p.add_option('--svm_tol', action='store', dest='svm_tol', type='float',
+                 help='SVM tolerance, default =1e-3.')
+    p.add_option('--svm_max_iter', action='store', dest='svm_max_iter', type='int',
+                 help='SVM max iterations, default=no max.')
+    p.add_option('--svm_degree', action='store', dest='svm_degree', type='int',
+                 help='SVM degree (poly), default=3.')
+    p.add_option('--svm_gamma', action='store', dest='svm_gamma', type='float',
+                 help='SVM gamma (poly, rbf), default=1/n_features.')
+    p.add_option('--svm_coef0', action='store', dest='svm_coef0', type='float',
+                 help='SVM independent coefficient (poly), default=0.0.')
+    p.set_defaults(fappend=None, dim=None, confusion=True, overwrite=False,
+                   svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
+                   svm_gamma=0.0, svm_coef0=0.0)
 
     (opts, args) = p.parse_args()
     if len(args) < 2:
@@ -282,8 +309,19 @@ if __name__ == '__main__':
 
     fappend = opts.fappend
     dim = opts.dim
+    if dim:
+        dim = int(opts.dim)
     confusion = opts.confusion
     overwrite = opts.overwrite
+
+    # Get svm options.
+    svm_kwargs = {}
+    svm_kwargs['svm_c'] = float(opts.svm_c)
+    svm_kwargs['svm_tol'] = float(opts.svm_tol)
+    svm_kwargs['svm_max_iter'] = int(opts.svm_max_iter)
+    svm_kwargs['svm_degree'] = int(opts.svm_degree)
+    svm_kwargs['svm_gamma'] = float(opts.svm_gamma)
+    svm_kwargs['svm_coef0'] = float(opts.svm_coef0)
 
     # Load data.
     data = load_data()
@@ -296,7 +334,7 @@ if __name__ == '__main__':
     if overwrite \
         or not(os.path.isfile(cfname) and os.path.isfile(vfname)) \
         or (dfname and not os.path.isfile(dfname)):
-        train(data, dataset, model, dim=dim, fappend=fappend)
+        train(data, dataset, model, dim=dim, fappend=fappend, **svm_kwargs)
 
     # Evaluate classifier.
     eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)

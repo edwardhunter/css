@@ -47,13 +47,13 @@ def train(data, dataset, model, **kwargs):
     ############################################################
     # Create feature extractor, classifier.
     ############################################################
-    # TODO
+    # TODO: create clf, vectorizer.
     ############################################################
 
     ############################################################
     # If specified, create feature dimension reducer.
     ############################################################
-    # TODO
+    # TODO: create fselector.
     ############################################################
 
     ############################################################
@@ -148,7 +148,7 @@ def predict(input_data, cfname, vfname, **kwargs):
     ############################################################
     # Compute features and predict.
     ############################################################
-    # TODO
+    # TODO: create variable pred.
     ############################################################
 
     # Return vector of predicted labels.
@@ -198,14 +198,13 @@ def eval(data, dataset, model, **kwargs):
     # Evaluate predictions: metrics.
     ############################################################
     # TODO: create values for f1, precision, recall, conf_matrix
+    # TODO: Create variables class_report, conf_matrix.
     ############################################################
 
-    # Print evaluation data.
+    # Print evaluations.
     print '-'*80
-    print("F1-score:  \t\t %0.3f" % f1)
-    print("Precision: \t\t %0.3f " % precision)
-    print("Recall:    \t\t %0.3f " % recall)
-    print ''
+    print("Classification report:")
+    print class_report
 
     print '-'*80
     print 'Confusion Matrix:'
@@ -232,22 +231,32 @@ def eval(data, dataset, model, **kwargs):
         plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
         plt.savefig(figfname)
 
-
 if __name__ == '__main__':
+
+    # Load training/testing utilities.
+    from data import load_data, datasets
 
     # Parse command line arguments and options.
     usage = 'usage: %prog [options] model dataset'
+    usage += ('\n\tmodel = %s\n\tdataset = %s') % (MODELS, datasets)
     description = 'Train and evaluate supervised classifiers.'
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-f','--fappend', action='store', dest='fappend',
                  help='File name appendix string.')
-    p.add_option('-d','--dim', action='store', dest='dim',
+    p.add_option('-d','--dim', action='store', dest='dim', type='int',
                  help='Reduced feature dimension integer.')
     p.add_option('-c', '--confusion', action='store_true',
                  dest='confusion', help='Save confusion image.')
     p.add_option('-o', '--overwrite', action='store_true',
                  dest='overwrite', help='Overwrite existing files.')
     p.set_defaults(fappend=None, dim=None, confusion=True, overwrite=False)
+
+    ############################################################
+    # Add method specific options.
+    ############################################################
+    # TODO
+    ############################################################
+
 
     (opts, args) = p.parse_args()
     if len(args) < 2:
@@ -259,16 +268,20 @@ if __name__ == '__main__':
 
     fappend = opts.fappend
     dim = opts.dim
-    if dim:
-        dim = int(opts.dim)
     confusion = opts.confusion
     overwrite = opts.overwrite
 
+    ############################################################
+    # Extract method specific options.
+    ############################################################
+    # TODO (optional): create options dict method_kwargs for train.
+    ############################################################
+
+    # Load data.
+    data = load_data()
+
     # Create classifier, feature extractor and dim reducer names.
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
-
-    # Load training/testing data.
-    from data import data
 
     # If we are specified to overwrite, or if required files missing, train and
     # store classifier components.

@@ -15,10 +15,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors.nearest_centroid import NearestCentroid
+from sklearn.svm import SVC, LinearSVC
 from sklearn import metrics
 from sklearn.preprocessing import normalize
 from sklearn.feature_selection import SelectKBest, chi2
-from sklearn.metrics import confusion_matrix
 from sklearn.datasets import fetch_20newsgroups
 
 # Import numpy for vector manipulation.

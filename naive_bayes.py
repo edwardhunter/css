@@ -110,7 +110,7 @@ def train(data, dataset, model, **kwargs):
         fhandle = open(dfname,'w')
         pickle.dump(fselector, fhandle)
         fhandle.close()
-        print 'Feature selector written to file %s' % (vfname)
+        print 'Feature selector written to file %s' % (dfname)
 
 def predict(input_data, cfname, vfname, **kwargs):
     """
@@ -220,18 +220,15 @@ def eval(data, dataset, model, **kwargs):
     ############################################################
     # Evaluate predictions: metrics.
     ############################################################
-    f1 = metrics.f1_score(data_test_target, pred)
-    precision = metrics.precision_score(data_test_target, pred)
-    recall = metrics.recall_score(data_test_target, pred)
-    conf_matrix = confusion_matrix(data_test_target ,pred)
+    class_report = metrics.classification_report(data_test_target, pred,
+                                                 target_names=data_target_names)
+    conf_matrix = metrics.confusion_matrix(data_test_target ,pred)
     ############################################################
 
-    # Print evaluation data.
+    # Print evaluations.
     print '-'*80
-    print("F1-score:  \t\t %0.3f" % f1)
-    print("Precision: \t\t %0.3f " % precision)
-    print("Recall:    \t\t %0.3f " % recall)
-    print ''
+    print("Classification report:")
+    print class_report
 
     print '-'*80
     print 'Confusion Matrix:'
@@ -261,13 +258,17 @@ def eval(data, dataset, model, **kwargs):
 
 if __name__ == '__main__':
 
+    # Load training/testing utilities.
+    from data import load_data, datasets
+
     # Parse command line arguments and options.
     usage = 'usage: %prog [options] model dataset'
+    usage += ('\n\tmodel = %s\n\tdataset = %s') % (MODELS, datasets)
     description = 'Train and evaluate supervised classifiers.'
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-f','--fappend', action='store', dest='fappend',
                  help='File name appendix string.')
-    p.add_option('-d','--dim', action='store', dest='dim',
+    p.add_option('-d','--dim', action='store', dest='dim', type='int',
                  help='Reduced feature dimension integer.')
     p.add_option('-c', '--confusion', action='store_true',
                  dest='confusion', help='Save confusion image.')
@@ -285,16 +286,14 @@ if __name__ == '__main__':
 
     fappend = opts.fappend
     dim = opts.dim
-    if dim:
-        dim = int(opts.dim)
     confusion = opts.confusion
     overwrite = opts.overwrite
 
+    # Load data.
+    data = load_data()
+
     # Create classifier, feature extractor and dim reducer names.
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
-
-    # Load training/testing data.
-    from data import data
 
     # If we are specified to overwrite, or if required files missing, train and
     # store classifier components.
