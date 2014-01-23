@@ -19,7 +19,8 @@ from sklearn.svm import SVC, LinearSVC
 from sklearn import metrics
 from sklearn.preprocessing import normalize
 from sklearn.feature_selection import SelectKBest, chi2
-from sklearn.datasets import fetch_20newsgroups
+from sklearn.datasets.twenty_newsgroups import fetch_20newsgroups
+from sklearn.datasets.twenty_newsgroups import download_20newsgroups
 
 # Import numpy for vector manipulation.
 import numpy as np
@@ -34,6 +35,14 @@ import sys
 import os
 import optparse
 import math
+import tarfile
+import re
+import logging
+import copy
+import random
+import shutil
+from urllib2 import urlopen
+
 
 def get_fnames(method, model, dataset, dim=None, appendix=None):
     """

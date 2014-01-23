@@ -266,7 +266,7 @@ def eval(data, dataset, model, **kwargs):
 if __name__ == '__main__':
 
     # Load training/testing utilities.
-    from data import load_data, datasets
+    from data_utils import load_data, datasets
 
     # Parse command line arguments and options.
     usage = 'usage: %prog [options] model dataset'
