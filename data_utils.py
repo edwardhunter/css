@@ -31,6 +31,7 @@ REUTERS_CACHE_NAME = "reuters21578.pkz"
 REUTERS10_IDX_NAME = "reuters21578-10-idx.pkz"
 REUTERS10_CACHE_NAME = "reuters21578-10.pkz"
 
+DATASETS = ('20news','reuters21578-10')
 
 def download_20news(data_home=DATA_HOME, news_home=NEWS_HOME,
                     news_cache_name=NEWS_CACHE_NAME):
@@ -77,15 +78,6 @@ def make_20news(data_home=DATA_HOME):
     open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
 
 
-def load_20news(data_home=DATA_HOME, news20_cache_name=NEWS20_CACHE_NAME):
-    """
-    Load the full 20news data.
-    @return data: Dictionary of 20news training and testing data.
-    """
-    news20_cache_path = os.path.join(data_home, news20_cache_name)
-    return pickle.loads(open(news20_cache_path, 'rb').read().decode('zip'))
-
-
 def download_reuters(data_home=DATA_HOME, reuters_home=REUTERS_HOME,
                      reuters_cache_name=REUTERS_CACHE_NAME):
     """
@@ -127,6 +119,7 @@ def download_reuters(data_home=DATA_HOME, reuters_home=REUTERS_HOME,
     shutil.rmtree(archive_dir)
 
     return p
+
 
 def split_reuters10(data_home=DATA_HOME, reuters_cache_name=REUTERS_CACHE_NAME,
                     reuters10_idx_name=REUTERS10_IDX_NAME, test_frac=0.2):
@@ -179,21 +172,33 @@ def make_reuters10(data_home=DATA_HOME, reuters_cache_name=REUTERS_CACHE_NAME,
     open(reuters10_cache_path, 'wb').write(pickle.dumps(data).encode('zip'))
 
 
-def load_reuters10(data_home=DATA_HOME, reuters10_cache_name=REUTERS10_CACHE_NAME):
+def load_data(name, data_home=DATA_HOME):
     """
-    Load a populated reuters10 data pickle.
-    @param data_home: relative directory name for data.
-    @param reuters10_cache_name: Name of fully populated reuters10 pickle.
-    @return: dictionary containing top-10, labeled single topic reuters data.
+    Load a data pickle into memory for processing.
+    @param name: Name of the pickle less the .pkz extension.
+    @param data_home: Directory to find the pickle. Default is ./data.
     """
-    reuters10_cache_path = os.path.join(data_home, reuters10_cache_name)
-    return pickle.loads(open(reuters10_cache_path, 'rb').read().decode('zip'))
+    file_path = os.path.join(data_home, name + '.pkz')
+    if not os.path.isfile(file_path):
+        raise ValueError('Could not find the file %s' % file_path)
 
-def load_reuters_parser(data_home=DATA_HOME, reuters_cache_name=REUTERS_CACHE_NAME):
-    """
-    Load a full corpus reuters parser.
-    @param reuters_cache_name: Name of the reuters cache pickle in data_home.
-    @return: A ReutersParser that contains the full and single topic corpora within.
-    """
-    reuters10_cache_path = os.path.join(data_home, reuters_cache_name)
-    return pickle.loads(open(reuters10_cache_path, 'rb').read().decode('zip'))
+    return pickle.loads(open(file_path, 'rb').read().decode('zip'))
+
+
+# If run as a script, destroy and recreate all data pickles.
+if __name__ == '__main__':
+
+    if len(sys.argv) > 1:
+        data_home = sys.argv[1]
+    else:
+        data_home=DATA_HOME
+
+    if os.path.isdir(data_home):
+        shutil.rmtree(data_home)
+
+    download_20news(data_home)
+    make_20news(data_home)
+    download_reuters(data_home)
+    split_reuters10(data_home)
+    make_reuters10(data_home)
+

@@ -266,11 +266,11 @@ def eval(data, dataset, model, **kwargs):
 if __name__ == '__main__':
 
     # Load training/testing utilities.
-    from data_utils import load_data, datasets
+    from data_utils import load_data, DATASETS
 
     # Parse command line arguments and options.
     usage = 'usage: %prog [options] model dataset'
-    usage += ('\n\tmodel = %s\n\tdataset = %s') % (MODELS, datasets)
+    usage += ('\n\tmodel = %s\n\tdataset = %s') % (MODELS, DATASETS)
     description = 'Train and evaluate supervised classifiers.'
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-f','--fappend', action='store', dest='fappend',
