@@ -109,19 +109,15 @@ def predict(input_data, cfname, vfname, **kwargs):
     if not isinstance(input_data, list):
         raise ValueError('Invalid input data.')
 
-    if not isinstance(cfname, str) or \
-        not os.path.isfile(cfname):
+    if not isinstance(cfname, str):
         raise ValueError('Invalid classifier file name.')
 
-    if not isinstance(vfname, str) or \
-        not os.path.isfile(vfname):
+    if not isinstance(vfname, str):
         raise ValueError('Invalid feature extractor file name.')
 
     dfname = kwargs.get('dfname',None)
-    if dfname:
-        if not isinstance(dfname, str) or \
-            not os.path.isfile(dfname):
-            raise ValueError('Invalid dimension reducer file name.')
+    if dfname and not isinstance(dfname, str):
+        raise ValueError('Invalid dimension reducer file name.')
 
     # Read in the classifer.
     cpname = os.path.join(MODEL_HOME,cfname)
@@ -174,7 +170,7 @@ def eval(data, dataset, model, **kwargs):
         raise ValueError('Invalid data dictionary.')
 
     if not isinstance(dataset, str):
-        raise ValueError('Invalid data dictionary.')
+        raise ValueError('Invalid dataset name.')
 
     if not isinstance(model,str) or model not in MODELS:
         raise ValueError('Invalid model type parameter.')
@@ -227,7 +223,7 @@ def eval(data, dataset, model, **kwargs):
         plt.set_cmap('hot')
         plt.colorbar()
         plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
-        figpath = os.path.join(MODEL_HOME, figname)
+        figpath = os.path.join(MODEL_HOME, figfname)
         plt.savefig(figpath)
 
 
