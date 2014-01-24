@@ -1,21 +1,19 @@
 #!/usr/bin/env python
 
 """
-@package css.neighbors
-@file css/neighbors.py
+@package css.naive_bayes
+@file css/naive_bayes.py
 @author Edward Hunter
-@author K Sree Harsha
 @author Your Name Here
-@brief Nearest neighbor and nearest centroid supervised learning
-and evaluation methods.
+@brief Naive Bayes supervised learning and evaluation methods.
 """
 
 # Import common modules and utilities.
 from common import *
 
 # Define method and models available.
-METHOD = 'Neighbors'
-MODELS = ('KNN','Centroid')
+METHOD = 'Naive_Bayes'
+MODELS = ('Bernoulli','Multinomial','TFIDF')
 
 
 def train(data, dataset, model, **kwargs):
@@ -45,11 +43,17 @@ def train(data, dataset, model, **kwargs):
     ############################################################
     # Create feature extractor, classifier.
     ############################################################
-    vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True)
-    if model == 'KNN':
-        clf = KNeighborsClassifier()
-    elif model == 'Centroid':
-        clf = NearestCentroid()
+    if model == 'Bernoulli':
+        vectorizer = CountVectorizer(stop_words='english', binary=True)
+        clf=BernoulliNB(alpha=.01)
+
+    elif model == 'Multinomial':
+        vectorizer = CountVectorizer(stop_words='english')
+        clf=MultinomialNB(alpha=.01)
+
+    elif model == 'TFIDF':
+        vectorizer = TfidfVectorizer(stop_words='english')
+        clf=MultinomialNB(alpha=.01)
     ############################################################
 
     ############################################################
@@ -68,7 +72,6 @@ def train(data, dataset, model, **kwargs):
     x_train = vectorizer.fit_transform(data_train)
     if dim:
         x_train = fselector.fit_transform(x_train, data_train_target)
-        x_train = normalize(x_train)
     print 'Extracted in %f seconds.' % (time.time() - start)
     ############################################################
 
@@ -99,7 +102,6 @@ def train(data, dataset, model, **kwargs):
     print 'Feature extractor written to file %s' % (vfname)
 
     # Write out dimension reducer.
-    dim = kwargs.get('dim', None)
     if dim:
         fhandle = open(dfname,'w')
         pickle.dump(fselector, fhandle)
@@ -159,7 +161,6 @@ def predict(input_data, cfname, vfname, **kwargs):
     x_test = vectorizer.transform(input_data)
     if dfname:
         x_test = fselector.transform(x_test)
-        x_test = normalize(x_test)
     pred = clf.predict(x_test)
     ############################################################
 
@@ -275,11 +276,11 @@ if __name__ == '__main__':
     confusion = opts.confusion
     overwrite = opts.overwrite
 
-    # Load data.
-    data = load_data(dataset)
-
     # Create classifier, feature extractor and dim reducer names.
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
+
+    # Load training/testing data.
+    data = load_data(dataset)
 
     # If we are specified to overwrite, or if required files missing, train and
     # store classifier components.

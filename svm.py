@@ -4,7 +4,6 @@
 @package css.svm
 @file css/svm.py
 @author Edward Hunter
-@author K Sree Harsha
 @author Your Name Here
 @brief Support vector machine supervised learning and evaluation methods.
 """
@@ -37,15 +36,12 @@ def train(data, dataset, model, **kwargs):
     if not isinstance(dataset, str):
         raise ValueError('Invalid data dictionary.')
 
-    if not dataset in data.keys():
-        raise ValueError('Specified dataset not in data dictionary.')
-
     if not isinstance(model,str) or model not in MODELS:
         raise ValueError('Invalid model type parameter.')
 
     # Retrieve training data.
-    data_train = data[dataset]['train']
-    data_train_target = data[dataset]['train_target']
+    data_train = data['train']
+    data_train_target = data['train_target']
 
     ############################################################
     # Create feature extractor, classifier.
@@ -160,18 +156,12 @@ def predict(input_data, cfname, vfname, **kwargs):
     print 'Read feature extractor from file: %s' % vfname
 
     # If requested, load the dimension reducer.
-    if dfname:
-        fhandle = open(dfname)
-        fselector = pickle.load(fhandle)
-        fhandle.close()
-
-    # Write out dimension reducer.
     dfname = kwargs.get('dfname', None)
     if dfname:
-        fhandle = open(dfname,'w')
-        pickle.dump(fselector, fhandle)
+        fhandle = open(dfname, 'r')
+        fselector = pickle.load(fhandle)
         fhandle.close()
-        print 'Feature selector written to file %s' % (dfname)
+        print 'Feature selector read from file %s' % (dfname)
 
     ############################################################
     # Compute features and predict.
@@ -205,9 +195,6 @@ def eval(data, dataset, model, **kwargs):
 
     if not isinstance(dataset, str):
         raise ValueError('Invalid data dictionary.')
-
-    if not dataset in data.keys():
-        raise ValueError('Specified dataset not in data dictionary.')
 
     if not isinstance(model,str) or model not in MODELS:
         raise ValueError('Invalid model type parameter.')
@@ -276,7 +263,7 @@ if __name__ == '__main__':
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-f','--fappend', action='store', dest='fappend',
                  help='File name appendix string.')
-    p.add_option('-d','--dim', action='store', dest='dim',
+    p.add_option('-d','--dim', action='store', dest='dim', type='int',
                  help='Reduced feature dimension integer.')
     p.add_option('-c', '--confusion', action='store_true',
                  dest='confusion', help='Save confusion image.')

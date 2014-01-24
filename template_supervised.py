@@ -4,7 +4,6 @@
 @package css.template_supervised
 @file css/template_supervised.py
 @author Edward Hunter
-@author K Sree Harsha
 @author Your Name Here
 @brief A template to be customized for supervised learning experiments.
 """
@@ -38,8 +37,8 @@ def train(data, dataset, model, **kwargs):
         raise ValueError('Invalid model type parameter.')
 
     # Retrieve training data.
-    data_train = data[dataset]['train']
-    data_train_target = data[dataset]['train_target']
+    data_train = data['train']
+    data_train_target = data['train_target']
 
     ############################################################
     # Create feature extractor, classifier.
@@ -83,6 +82,7 @@ def train(data, dataset, model, **kwargs):
     print 'Feature extractor written to file %s' % (vfname)
 
     # Write out dimension reducer.
+    dim = kwargs.get('dim', None)
     if dim:
         fhandle = open(dfname,'w')
         pickle.dump(fselector, fhandle)
@@ -129,18 +129,12 @@ def predict(input_data, cfname, vfname, **kwargs):
     print 'Read feature extractor from file: %s' % vfname
 
     # If requested, load the dimension reducer.
+    dfname = kwargs.get('dfname', None)
     if dfname:
-        fhandle = open(dfname)
+        fhandle = open(dfname, 'r')
         fselector = pickle.load(fhandle)
         fhandle.close()
-
-    # Read in the dimension selector.
-    dim = kwargs.get('dim', None)
-    if dim:
-        fhandle = open(dfname)
-        fselector = pickle.load(fhandle)
-        fhandle.close()
-        print 'Read feature extractor from file: %s' % dfname
+        print 'Feature selector read from file %s' % (dfname)
 
     ############################################################
     # Compute features and predict.
@@ -172,16 +166,13 @@ def eval(data, dataset, model, **kwargs):
     if not isinstance(dataset, str):
         raise ValueError('Invalid data dictionary.')
 
-    if not dataset in data.keys():
-        raise ValueError('Specified dataset not in data dictionary.')
-
     if not isinstance(model,str) or model not in MODELS:
         raise ValueError('Invalid model type parameter.')
 
     # Extract test and target data.
-    data_test = data[dataset]['test']
-    data_test_target = data[dataset]['test_target']
-    data_target_names = data[dataset]['target_names']
+    data_test = data['test']
+    data_test_target = data['test_target']
+    data_target_names = data['target_names']
 
     # Create classifier, feature extractor and dim reducer names.
     fappend = kwargs.get('fappend', None)
@@ -227,6 +218,7 @@ def eval(data, dataset, model, **kwargs):
         plt.colorbar()
         plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
         plt.savefig(figfname)
+
 
 if __name__ == '__main__':
 
