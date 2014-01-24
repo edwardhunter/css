@@ -4,7 +4,6 @@
 @package css.neighbors
 @file css/neighbors.py
 @author Edward Hunter
-@author K Sree Harsha
 @author Your Name Here
 @brief Nearest neighbor and nearest centroid supervised learning
 and evaluation methods.
