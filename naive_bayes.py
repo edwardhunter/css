@@ -288,11 +288,11 @@ if __name__ == '__main__':
     confusion = opts.confusion
     overwrite = opts.overwrite
 
+    # Load data.
+    data = load_data(dataset)
+
     # Create classifier, feature extractor and dim reducer names.
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
-
-    # Load training/testing data.
-    data = load_data(dataset)
 
     # If we are specified to overwrite, or if required files missing, train and
     # store classifier components.
