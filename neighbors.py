@@ -42,8 +42,8 @@ def train(data, dataset, model, **kwargs):
         raise ValueError('Invalid model type parameter.')
 
     # Retrieve training data.
-    data_train = data[dataset]['train']
-    data_train_target = data[dataset]['train_target']
+    data_train = data['train']
+    data_train_target = data['train_target']
 
     ############################################################
     # Create feature extractor, classifier.
@@ -102,6 +102,7 @@ def train(data, dataset, model, **kwargs):
     print 'Feature extractor written to file %s' % (vfname)
 
     # Write out dimension reducer.
+    dim = kwargs.get('dim', None)
     if dim:
         fhandle = open(dfname,'w')
         pickle.dump(fselector, fhandle)
@@ -147,19 +148,13 @@ def predict(input_data, cfname, vfname, **kwargs):
     fhandle.close()
     print 'Read feature extractor from file: %s' % vfname
 
-    # If requested, load the dimension reducer.
+    # Write out dimension reducer.
+    dfname = kwargs.get('dfname', None)
     if dfname:
-        fhandle = open(dfname)
-        fselector = pickle.load(fhandle)
+        fhandle = open(dfname,'w')
+        pickle.dump(fselector, fhandle)
         fhandle.close()
-
-    # Read in the dimension selector.
-    dim = kwargs.get('dim', None)
-    if dim:
-        fhandle = open(dfname)
-        fselector = pickle.load(fhandle)
-        fhandle.close()
-        print 'Read feature extractor from file: %s' % dfname
+        print 'Feature selector written to file %s' % (dfname)
 
     ############################################################
     # Compute features and predict.
@@ -286,7 +281,7 @@ if __name__ == '__main__':
     overwrite = opts.overwrite
 
     # Load data.
-    data = load_data()
+    data = load_data(dataset)
 
     # Create classifier, feature extractor and dim reducer names.
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)

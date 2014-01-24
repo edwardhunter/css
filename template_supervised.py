@@ -34,9 +34,6 @@ def train(data, dataset, model, **kwargs):
     if not isinstance(dataset, str):
         raise ValueError('Invalid data dictionary.')
 
-    if not dataset in data.keys():
-        raise ValueError('Specified dataset not in data dictionary.')
-
     if not isinstance(model,str) or model not in MODELS:
         raise ValueError('Invalid model type parameter.')
 
@@ -278,7 +275,7 @@ if __name__ == '__main__':
     ############################################################
 
     # Load data.
-    data = load_data()
+    data = load_data(dataset)
 
     # Create classifier, feature extractor and dim reducer names.
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)

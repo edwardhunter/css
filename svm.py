@@ -113,6 +113,7 @@ def train(data, dataset, model, **kwargs):
     print 'Feature extractor written to file %s' % (vfname)
 
     # Write out dimension reducer.
+    dim = kwargs.get('dim', None)
     if dim:
         fhandle = open(dfname,'w')
         pickle.dump(fselector, fhandle)
@@ -164,13 +165,13 @@ def predict(input_data, cfname, vfname, **kwargs):
         fselector = pickle.load(fhandle)
         fhandle.close()
 
-    # Read in the dimension selector.
-    dim = kwargs.get('dim', None)
-    if dim:
-        fhandle = open(dfname)
-        fselector = pickle.load(fhandle)
+    # Write out dimension reducer.
+    dfname = kwargs.get('dfname', None)
+    if dfname:
+        fhandle = open(dfname,'w')
+        pickle.dump(fselector, fhandle)
         fhandle.close()
-        print 'Read feature extractor from file: %s' % dfname
+        print 'Feature selector written to file %s' % (dfname)
 
     ############################################################
     # Compute features and predict.
@@ -212,9 +213,9 @@ def eval(data, dataset, model, **kwargs):
         raise ValueError('Invalid model type parameter.')
 
     # Extract test and target data.
-    data_test = data[dataset]['test']
-    data_test_target = data[dataset]['test_target']
-    data_target_names = data[dataset]['target_names']
+    data_test = data['test']
+    data_test_target = data['test_target']
+    data_target_names = data['target_names']
 
     # Create classifier, feature extractor and dim reducer names.
     fappend = kwargs.get('fappend', None)
@@ -309,8 +310,6 @@ if __name__ == '__main__':
 
     fappend = opts.fappend
     dim = opts.dim
-    if dim:
-        dim = int(opts.dim)
     confusion = opts.confusion
     overwrite = opts.overwrite
 
@@ -324,7 +323,7 @@ if __name__ == '__main__':
     svm_kwargs['svm_coef0'] = opts.svm_coef0
 
     # Load data.
-    data = load_data()
+    data = load_data(dataset)
 
     # Create classifier, feature extractor and dim reducer names.
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
