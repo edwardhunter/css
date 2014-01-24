@@ -43,6 +43,8 @@ import random
 import shutil
 from urllib2 import urlopen
 
+# Default model directory.
+MODEL_HOME = os.path.join('.', 'models')
 
 def get_fnames(method, model, dataset, dim=None, appendix=None):
     """

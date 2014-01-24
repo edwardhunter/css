@@ -89,24 +89,32 @@ def train(data, dataset, model, **kwargs):
     dim = kwargs.get('dim', None)
     (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
 
+    if not os.path.exists(MODEL_HOME):
+        os.makedirs(MODEL_HOME)
+
     # Write out classifier.
-    fhandle = open(cfname,'w')
+    cpname = os.path.join(MODEL_HOME,cfname)
+    fhandle = open(cpname,'w')
     pickle.dump(clf, fhandle)
     fhandle.close()
-    print 'Classifier written to file %s' % (cfname)
+    print 'Classifier written to file %s' % (cpname)
 
     # Write out feature extractor.
-    fhandle = open(vfname,'w')
+    vpname = os.path.join(MODEL_HOME,vfname)
+    fhandle = open(vpname,'w')
     pickle.dump(vectorizer, fhandle)
     fhandle.close()
-    print 'Feature extractor written to file %s' % (vfname)
+    print 'Feature extractor written to file %s' % (vpname)
 
     # Write out dimension reducer.
+    dim = kwargs.get('dim', None)
     if dim:
-        fhandle = open(dfname,'w')
+        dpname = os.path.join(MODEL_HOME,dfname)
+        fhandle = open(dpname,'w')
         pickle.dump(fselector, fhandle)
         fhandle.close()
-        print 'Feature selector written to file %s' % (dfname)
+        print 'Feature selector written to file %s' % (dpname)
+
 
 def predict(input_data, cfname, vfname, **kwargs):
     """
@@ -136,24 +144,27 @@ def predict(input_data, cfname, vfname, **kwargs):
             raise ValueError('Invalid dimension reducer file name.')
 
     # Read in the classifer.
-    fhandle = open(cfname)
+    cpname = os.path.join(MODEL_HOME,cfname)
+    fhandle = open(cpname)
     clf = pickle.load(fhandle)
     fhandle.close()
-    print 'Read classifer from file: %s' % cfname
+    print 'Read classifer from file: %s' % cpname
 
     # Read in the feature extractor.
-    fhandle = open(vfname)
+    vpname = os.path.join(MODEL_HOME,vfname)
+    fhandle = open(vpname)
     vectorizer = pickle.load(fhandle)
     fhandle.close()
-    print 'Read feature extractor from file: %s' % vfname
+    print 'Read feature extractor from file: %s' % vpname
 
     # If requested, load the dimension reducer.
     dfname = kwargs.get('dfname', None)
     if dfname:
-        fhandle = open(dfname, 'r')
+        dpname = os.path.join(MODEL_HOME,dfname)
+        fhandle = open(dpname, 'r')
         fselector = pickle.load(fhandle)
         fhandle.close()
-        print 'Feature selector read from file %s' % (dfname)
+        print 'Feature selector read from file %s' % (dpname)
 
     ############################################################
     # Compute features and predict.
@@ -240,7 +251,8 @@ def eval(data, dataset, model, **kwargs):
         plt.set_cmap('hot')
         plt.colorbar()
         plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
-        plt.savefig(figfname)
+        figpath = os.path.join(MODEL_HOME, figname)
+        plt.savefig(figpath)
 
 
 if __name__ == '__main__':
