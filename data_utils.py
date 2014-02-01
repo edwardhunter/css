@@ -18,6 +18,8 @@ DATA_HOME = os.path.join('.', 'data')
 # 20 newsgroups defaults
 NEWS_CACHE_NAME = "20news-bydate.pkz"
 NEWS20_CACHE_NAME = "20news.pkz"
+NEWS20_4_CACHE_NAME = "20news4.pkz"
+NEWS20_5_CACHE_NAME = "20news5.pkz"
 NEWS_HOME = "20news_home"
 NEWS_ALL_CATEGORIES = None
 NEWS_REMOVE = ('headers', 'footers', 'quotes')
@@ -57,6 +59,7 @@ def make_20news(data_home=DATA_HOME):
     # Fetch the 20 newsgroup data, removing headers, footers, quotes.
     categories = None
     remove = ('headers', 'footers', 'quotes')
+    
     news_data_train = fetch_20newsgroups(subset='train', categories=categories,
                                 shuffle=True, random_state=42,
                                 remove=remove, data_home=data_home)
@@ -64,7 +67,23 @@ def make_20news(data_home=DATA_HOME):
     news_data_test = fetch_20newsgroups(subset='test', categories=categories,
                                shuffle=True, random_state=42,
                                remove=remove, data_home=data_home)
+    
+    news4_data_train = fetch_20news4groups(subset='train',
+                                shuffle=True, random_state=42,
+                                remove=remove, data_home=data_home)
 
+    news4_data_test = fetch_20news4groups(subset='test',
+                               shuffle=True, random_state=42,
+                               remove=remove, data_home=data_home)
+    
+    news5_data_train = fetch_20news5groups(subset='train', categories=categories,
+                                shuffle=True, random_state=42,
+                                remove=remove, data_home=data_home)
+
+    news5_data_test = fetch_20news5groups(subset='test', categories=categories,
+                               shuffle=True, random_state=42,
+                               remove=remove, data_home=data_home)
+	
     # Populate the 20 newsgroup data into our result data dictionary.
     data = {}
     data['target_names'] = news_data_train.target_names
@@ -75,6 +94,28 @@ def make_20news(data_home=DATA_HOME):
 
     # Write out a zipped pickle for the full 20 news set.
     news20_path = os.path.join(data_home, NEWS20_CACHE_NAME)
+    open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
+
+    data = {}
+    data['target_names'] = news4_data_train.target_names
+    data['train'] = news4_data_train.data
+    data['test'] = news4_data_test.data
+    data['train_target'] = news4_data_train.target
+    data['test_target'] = news4_data_test.target
+
+    # Write out a zipped pickle for the full 20 news set.
+    news20_path = os.path.join(data_home, NEWS20_4_CACHE_NAME)
+    open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
+
+    data = {}
+    data['target_names'] = news5_data_train.target_names
+    data['train'] = news5_data_train.data
+    data['test'] = news5_data_test.data
+    data['train_target'] = news5_data_train.target
+    data['test_target'] = news5_data_test.target
+
+    # Write out a zipped pickle for the full 20 news set.
+    news20_path = os.path.join(data_home, NEWS20_5_CACHE_NAME)
     open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
 
 
