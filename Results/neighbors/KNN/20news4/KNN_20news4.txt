@@ -1,0 +1,27 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python neighbors.py KNN 20news4
+Extracting text features...
+Extracted in 0.542603 seconds.
+Training classifier...
+Trained in 0.000962 seconds.
+Classifier written to file ./models/Neighbors_KNN_20news4_clf
+Feature extractor written to file ./models/Neighbors_KNN_20news4_vec
+Read classifer from file: ./models/Neighbors_KNN_20news4_clf
+Read feature extractor from file: ./models/Neighbors_KNN_20news4_vec
+--------------------------------------------------------------------------------
+Classification report:
+                    precision    recall  f1-score   support
+
+       alt.atheism       0.26      0.24      0.25       319
+     comp.graphics       0.28      0.52      0.37       389
+         sci.space       0.35      0.14      0.20       394
+talk.religion.misc       0.21      0.16      0.18       251
+
+       avg / total       0.28      0.27      0.26      1353
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+ 77  168   31   43  
+ 91  201   37   60  
+ 85  204   54   51  
+ 45  133   33   40  
+

@@ -1,0 +1,29 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python naive_bayes.py Multinomial 20news5
+Extracting text features...
+Extracted in 2.838367 seconds.
+Training classifier...
+Trained in 0.085063 seconds.
+Classifier written to file ./models/Naive_Bayes_Multinomial_20news5_clf
+Feature extractor written to file ./models/Naive_Bayes_Multinomial_20news5_vec
+Read classifer from file: ./models/Naive_Bayes_Multinomial_20news5_clf
+Read feature extractor from file: ./models/Naive_Bayes_Multinomial_20news5_vec
+--------------------------------------------------------------------------------
+Classification report:
+             precision    recall  f1-score   support
+
+  computers       0.87      0.76      0.81      2345
+ recreation       0.88      0.85      0.86      1590
+    science       0.68      0.81      0.74      1579
+   politics       0.77      0.76      0.76      1050
+   religion       0.76      0.82      0.79       968
+
+avg / total       0.81      0.80      0.80      7532
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+1782   104   413    20    26  
+  80  1345    77    50    38  
+ 114    39  1284    94    48  
+  30    23    66   798   133  
+  33    17    50    76   792  
+

@@ -1,0 +1,29 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python naive_bayes.py TFIDF 20news5
+Extracting text features...
+Extracted in 3.181608 seconds.
+Training classifier...
+Trained in 0.072988 seconds.
+Classifier written to file ./models/Naive_Bayes_TFIDF_20news5_clf
+Feature extractor written to file ./models/Naive_Bayes_TFIDF_20news5_vec
+Read classifer from file: ./models/Naive_Bayes_TFIDF_20news5_clf
+Read feature extractor from file: ./models/Naive_Bayes_TFIDF_20news5_vec
+--------------------------------------------------------------------------------
+Classification report:
+             precision    recall  f1-score   support
+
+  computers       0.83      0.92      0.87      2345
+ recreation       0.89      0.86      0.88      1590
+    science       0.82      0.75      0.78      1579
+   politics       0.80      0.79      0.79      1050
+   religion       0.83      0.79      0.81       968
+
+avg / total       0.84      0.84      0.83      7532
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+2155    60   107    13    10  
+ 112  1366    60    30    22  
+ 233    54  1181    80    31  
+  45    31    54   825    95  
+  55    21    41    82   769  
+

@@ -1,0 +1,27 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python naive_bayes.py Bernoulli 20news4
+Extracting text features...
+Extracted in 0.480176 seconds.
+Training classifier...
+Trained in 0.016905 seconds.
+Classifier written to file ./models/Naive_Bayes_Bernoulli_20news4_clf
+Feature extractor written to file ./models/Naive_Bayes_Bernoulli_20news4_vec
+Read classifer from file: ./models/Naive_Bayes_Bernoulli_20news4_clf
+Read feature extractor from file: ./models/Naive_Bayes_Bernoulli_20news4_vec
+--------------------------------------------------------------------------------
+Classification report:
+                    precision    recall  f1-score   support
+
+       alt.atheism       0.60      0.75      0.67       319
+     comp.graphics       0.72      0.95      0.82       389
+         sci.space       0.90      0.69      0.78       394
+talk.religion.misc       0.70      0.39      0.51       251
+
+       avg / total       0.74      0.72      0.71      1353
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+240   29    9   41  
+  7  368   14    0  
+ 38   85  270    1  
+116   29    7   99  
+
