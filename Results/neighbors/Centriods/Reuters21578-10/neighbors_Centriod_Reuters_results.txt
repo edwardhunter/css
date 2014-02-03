@@ -1,0 +1,39 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python neighbors.py Centroid reuters21578-10
+Extracting text features...
+Extracted in 1.086998 seconds.
+Training classifier...
+Trained in 0.033528 seconds.
+Classifier written to file ./models/Neighbors_Centroid_reuters21578-10_clf
+Feature extractor written to file ./models/Neighbors_Centroid_reuters21578-10_vec
+Read classifer from file: ./models/Neighbors_Centroid_reuters21578-10_clf
+Read feature extractor from file: ./models/Neighbors_Centroid_reuters21578-10_vec
+--------------------------------------------------------------------------------
+Classification report:
+              precision    recall  f1-score   support
+
+        earn       1.00      0.78      0.88       789
+         acq       0.71      0.99      0.83       472
+       crude       0.91      0.90      0.91        82
+       trade       0.92      0.96      0.94        72
+    money-fx       0.85      0.92      0.88        61
+    interest       0.93      0.72      0.81        57
+money-supply       0.82      0.84      0.83        32
+        ship       0.94      0.94      0.94        32
+       sugar       1.00      0.93      0.96        29
+      coffee       1.00      0.91      0.95        23
+
+ avg / total       0.90      0.87      0.87      1649
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+615  167    5    0    0    1    1    0    0    0  
+  1  467    2    2    0    0    0    0    0    0  
+  0    6   74    1    0    0    0    1    0    0  
+  0    1    0   69    0    0    1    1    0    0  
+  0    1    0    1   56    1    2    0    0    0  
+  0    4    0    1    9   41    2    0    0    0  
+  0    2    0    1    1    1   27    0    0    0  
+  0    2    0    0    0    0    0   30    0    0  
+  0    2    0    0    0    0    0    0   27    0  
+  0    2    0    0    0    0    0    0    0   21  
+

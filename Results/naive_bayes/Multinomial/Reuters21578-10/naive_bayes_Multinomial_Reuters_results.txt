@@ -1,0 +1,39 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python naive_bayes.py Multinomial reuters21578-10
+Extracting text features...
+Extracted in 1.046168 seconds.
+Training classifier...
+Trained in 0.066836 seconds.
+Classifier written to file ./models/Naive_Bayes_Multinomial_reuters21578-10_clf
+Feature extractor written to file ./models/Naive_Bayes_Multinomial_reuters21578-10_vec
+Read classifer from file: ./models/Naive_Bayes_Multinomial_reuters21578-10_clf
+Read feature extractor from file: ./models/Naive_Bayes_Multinomial_reuters21578-10_vec
+--------------------------------------------------------------------------------
+Classification report:
+              precision    recall  f1-score   support
+
+        earn       0.98      0.94      0.96       789
+         acq       0.91      0.97      0.94       472
+       crude       0.87      0.90      0.89        82
+       trade       0.81      0.83      0.82        72
+    money-fx       0.78      0.95      0.86        61
+    interest       0.90      0.82      0.86        57
+money-supply       0.93      0.88      0.90        32
+        ship       0.93      0.88      0.90        32
+       sugar       1.00      0.86      0.93        29
+      coffee       1.00      0.91      0.95        23
+
+ avg / total       0.94      0.93      0.93      1649
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+739   41    5    2    0    2    0    0    0    0  
+  9  460    1    1    1    0    0    0    0    0  
+  2    0   74    4    0    0    0    2    0    0  
+  1    1    3   60    6    0    1    0    0    0  
+  0    0    0    1   58    2    0    0    0    0  
+  0    0    0    1    8   47    1    0    0    0  
+  2    0    0    0    1    1   28    0    0    0  
+  0    2    2    0    0    0    0   28    0    0  
+  0    0    0    4    0    0    0    0   25    0  
+  0    1    0    1    0    0    0    0    0   21  
+

@@ -1,0 +1,39 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python naive_bayes.py Bernoulli reuters21578-10
+Extracting text features...
+Extracted in 1.057721 seconds.
+Training classifier...
+Trained in 0.102662 seconds.
+Classifier written to file ./models/Naive_Bayes_Bernoulli_reuters21578-10_clf
+Feature extractor written to file ./models/Naive_Bayes_Bernoulli_reuters21578-10_vec
+Read classifer from file: ./models/Naive_Bayes_Bernoulli_reuters21578-10_clf
+Read feature extractor from file: ./models/Naive_Bayes_Bernoulli_reuters21578-10_vec
+--------------------------------------------------------------------------------
+Classification report:
+              precision    recall  f1-score   support
+
+        earn       0.96      0.93      0.95       789
+         acq       0.89      0.97      0.93       472
+       crude       0.91      0.78      0.84        82
+       trade       0.68      0.68      0.68        72
+    money-fx       0.74      0.79      0.76        61
+    interest       0.77      0.77      0.77        57
+money-supply       0.74      0.88      0.80        32
+        ship       1.00      0.81      0.90        32
+       sugar       0.92      0.83      0.87        29
+      coffee       0.94      0.70      0.80        23
+
+ avg / total       0.91      0.90      0.90      1649
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+735   44    4    4    0    2    0    0    0    0  
+ 11  456    0    3    1    1    0    0    0    0  
+  9    3   64    6    0    0    0    0    0    0  
+  6    2    1   49    5    2    7    0    0    0  
+  0    1    0    3   48    7    2    0    0    0  
+  1    0    0    1   10   44    1    0    0    0  
+  2    0    0    0    1    1   28    0    0    0  
+  0    4    1    1    0    0    0   26    0    0  
+  0    1    0    3    0    0    0    0   24    1  
+  1    2    0    2    0    0    0    0    2   16  
+

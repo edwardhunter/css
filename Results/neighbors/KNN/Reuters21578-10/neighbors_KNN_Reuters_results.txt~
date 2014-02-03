@@ -1,0 +1,41 @@
+harsha@Harsha-PC:/media/harsha/BAB6D06EB6D02D1F/Socialogy 290/Soc_git/css_Edward$ python neighbors.py KNN reuters21578-10
+Extracting text features...
+Extracted in 1.098432 seconds.
+Training classifier...
+Trained in 0.002738 seconds.
+Classifier written to file ./models/Neighbors_KNN_reuters21578-10_clf
+Feature extractor written to file ./models/Neighbors_KNN_reuters21578-10_vec
+Read classifer from file: ./models/Neighbors_KNN_reuters21578-10_clf
+Read feature extractor from file: ./models/Neighbors_KNN_reuters21578-10_vec
+/usr/local/lib/python2.7/dist-packages/sklearn/metrics/metrics.py:1905: UserWarning: The sum of true positives and false positives are equal to zero for some labels. Precision is ill defined for those labels [7 9]. The precision and recall are equal to zero for some labels. fbeta_score is ill defined for those labels [7 9]. 
+  average=None)
+--------------------------------------------------------------------------------
+Classification report:
+              precision    recall  f1-score   support
+
+        earn       0.52      0.90      0.66       789
+         acq       0.71      0.05      0.09       472
+       crude       0.17      0.12      0.14        82
+       trade       0.50      0.01      0.03        72
+    money-fx       0.50      0.21      0.30        61
+    interest       0.91      0.18      0.29        57
+money-supply       0.14      0.66      0.23        32
+        ship       0.00      0.00      0.00        32
+       sugar       1.00      0.03      0.07        29
+      coffee       0.00      0.00      0.00        23
+
+ avg / total       0.55      0.48      0.38      1649
+
+--------------------------------------------------------------------------------
+Confusion Matrix:
+711    7   17    0    4    0   50    0    0    0  
+389   24   16    0    6    0   37    0    0    0  
+ 59    1   10    0    0    0   12    0    0    0  
+ 58    2    3    1    0    0    8    0    0    0  
+ 36    0    5    0   13    1    6    0    0    0  
+ 38    0    3    0    2   10    4    0    0    0  
+ 11    0    0    0    0    0   21    0    0    0  
+ 27    0    1    0    1    0    3    0    0    0  
+ 22    0    2    1    0    0    3    0    1    0  
+ 19    0    1    0    0    0    3    0    0    0  
+
