@@ -23,7 +23,7 @@ from sklearn.datasets.twenty_newsgroups import fetch_20newsgroups
 from sklearn.datasets.twenty_newsgroups import download_20newsgroups
 from twenty_news5groups import *
 from twenty_news4groups import *
-
+from sklearn.grid_search import GridSearchCV
 
 # Import numpy for vector manipulation.
 import numpy as np

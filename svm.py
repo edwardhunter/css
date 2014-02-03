@@ -4,7 +4,7 @@
 @package css.svm
 @file css/svm.py
 @author Edward Hunter
-@author Your Name Here
+@author K Sree Harsha
 @brief Support vector machine supervised learning and evaluation methods.
 """
 
@@ -53,14 +53,24 @@ def train(data, dataset, model, **kwargs):
     svm_degree = kwargs.get('svm_degree', 3)
     svm_gamma = kwargs.get('svm_gamma', 0.0)
     svm_coef0 = kwargs.get('svm_coef0', 0.0)
-    if model == 'linear':
-        clf = SVC(kernel='linear', C=svm_c, tol=svm_tol, max_iter=svm_max_iter)
-    elif model == 'poly':
-        clf = SVC(kernel='poly', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
+    svm_grid_search=kwargs.get('svm_grid_search',False)
+
+
+    if svm_grid_search:
+        C_range = 10.0 ** np.arange(-2, 9)
+        gamma_range = 10.0 ** np.arange(-5, 4)
+        parameters={'gamma':gamma_range,'C':C_range}
+        svr = SVC()
+	clf = GridSearchCV(svr, parameters)
+    else:	
+    	if model == 'linear':
+        	clf = SVC(kernel='linear', C=svm_c, tol=svm_tol, max_iter=svm_max_iter)
+    	elif model == 'poly':
+        	clf = SVC(kernel='poly', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
             degree=svm_degree, gamma=svm_gamma, coef0=svm_coef0)
-    elif model == 'rbf':
-        clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
-            gamma=svm_gamma)
+    	elif model == 'rbf':
+        	clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
+         	   gamma=svm_gamma)
     ############################################################
 
     ############################################################
@@ -290,9 +300,10 @@ if __name__ == '__main__':
                  help='SVM gamma (poly, rbf), default=1/n_features.')
     p.add_option('--svm_coef0', action='store', dest='svm_coef0', type='float',
                  help='SVM independent coefficient (poly), default=0.0.')
+    p.add_option('-g','--gridsearch',action='store_true',dest='svm_grid_search',help='Grid Search for SVM')
     p.set_defaults(fappend=None, dim=None, confusion=True, overwrite=False,
                    svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
-                   svm_gamma=0.0, svm_coef0=0.0)
+                   svm_gamma=0.0, svm_coef0=0.0,grid_search=False)
 
     (opts, args) = p.parse_args()
     if len(args) < 2:
@@ -315,6 +326,7 @@ if __name__ == '__main__':
     svm_kwargs['svm_degree'] = opts.svm_degree
     svm_kwargs['svm_gamma'] = opts.svm_gamma
     svm_kwargs['svm_coef0'] = opts.svm_coef0
+    svm_kwargs['svm_grid_search']=opts.svm_grid_search
 
     # Load data.
     data = load_data(dataset)
