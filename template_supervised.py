@@ -67,7 +67,8 @@ def train(data, dataset, model, **kwargs):
     # Create classifier and feature extractor file names.
     fappend = kwargs.get('fappend', None)
     dim = kwargs.get('dim', None)
-    (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
+    (cfname, vfname, dfname, _, _) = \
+        get_fnames(METHOD, model, dataset, dim, fappend)
 
     if not os.path.exists(MODEL_HOME):
         os.makedirs(MODEL_HOME)
@@ -183,7 +184,8 @@ def eval(data, dataset, model, **kwargs):
     # Create classifier, feature extractor and dim reducer names.
     fappend = kwargs.get('fappend', None)
     dim = kwargs.get('dim', None)
-    (cfname, vfname, dfname, figfname) = get_fnames(METHOD, model, dataset, dim, fappend)
+    (cfname, vfname, dfname, figfname, reportname) = \
+        get_fnames(METHOD, model, dataset, dim, fappend)
 
     # Predict test data.
     pred = predict(data_test, cfname, vfname, dfname=dfname)
@@ -196,12 +198,13 @@ def eval(data, dataset, model, **kwargs):
     ############################################################
 
     # Print evaluations.
-    print '-'*80
-    print("Classification report:")
-    print class_report
-
-    print '-'*80
-    print 'Confusion Matrix:'
+    report = ''
+    report += '-'*80 +'\n'
+    report += 'Classification Report:\n'
+    report += class_report
+    report += '\n\n'
+    report += '-'*80 +'\n'
+    report += 'Confusion Matrix:\n'
     n = len(data_target_names)
     conf_max = np.amax(conf_matrix)
     lmax = math.log(conf_max, 10)
@@ -211,7 +214,17 @@ def eval(data, dataset, model, **kwargs):
         row = ''
         for i in range(n):
             row += (fmtstr % int(conf_matrix[j,i]))
-        print row
+        report += row + '\n'
+
+    report += '\n\n'
+    print report
+
+    if not os.path.exists(REPORT_HOME):
+        os.makedirs(REPORT_HOME)
+    reportpath = os.path.join(REPORT_HOME, reportname)
+    rf = open(reportpath, 'w')
+    rf.write(report)
+    rf.close()
 
     # Save an image of the confusion matrix.
     if kwargs.get('confusion', False):
@@ -223,7 +236,7 @@ def eval(data, dataset, model, **kwargs):
         plt.set_cmap('hot')
         plt.colorbar()
         plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
-        figpath = os.path.join(MODEL_HOME, figfname)
+        figpath = os.path.join(REPORT_HOME, figfname)
         plt.savefig(figpath)
 
 
@@ -277,13 +290,20 @@ if __name__ == '__main__':
     data = load_data(dataset)
 
     # Create classifier, feature extractor and dim reducer names.
-    (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
+    (cfname, vfname, dfname, _, _) = \
+        get_fnames(METHOD, model, dataset, dim, fappend)
 
     # If we are specified to overwrite, or if required files missing, train and
     # store classifier components.
-    if overwrite \
-        or not(os.path.isfile(cfname) and os.path.isfile(vfname)) \
-        or (dfname and not os.path.isfile(dfname)):
+    cfpath = os.path.join(MODEL_HOME,cfname)
+    vfpath = os.path.join(MODEL_HOME,vfname)
+    model_files_present = os.path.isfile(cfpath) and os.path.isfile(vfpath)
+    if dfname:
+        dfpath = os.path.join(MODEL_HOME,dfname)
+        dim_files_present = os.path.isfile(dfpath)
+    else:
+        dim_files_present = True
+    if overwrite or not model_files_present or not dim_files_present:
         train(data, dataset, model, dim=dim, fappend=fappend)
 
     # Evaluate classifier.

@@ -33,7 +33,64 @@ REUTERS_CACHE_NAME = "reuters21578.pkz"
 REUTERS10_IDX_NAME = "reuters21578-10-idx.pkz"
 REUTERS10_CACHE_NAME = "reuters21578-10.pkz"
 
-DATASETS = ('20news','reuters21578-10')
+DATASETS = ('20news','20news4', '20news5', 'reuters21578-10')
+
+"""
+20 Newsgroups labels
+0   'alt.atheism'
+1   'comp.graphics'
+2   'comp.os.ms-windows.misc'
+3   'comp.sys.ibm.pc.hardware'
+4   'comp.sys.mac.hardware'
+5   'comp.windows.x'
+6   'misc.forsale'
+7   'rec.autos'
+8   'rec.motorcycles'
+9  'rec.sport.baseball'
+10  'rec.sport.hockey'
+11  'sci.crypt'
+12  'sci.electronics'
+13  'sci.med'
+14  'sci.space'
+15  'soc.religion.christian'
+16  'talk.politics.guns'
+17  'talk.politics.mideast'
+18  'talk.politics.misc'
+19  'talk.religion.misc'
+
+4 Newgroups Labels:
+0   'alt.atheism'
+1   'comp.graphics'
+14  'sci.space'
+19  'talk.religion.misc'
+
+5 Newsgroups Labels:
+0   computers
+    1 'comp.graphics'
+    2 'comp.os.ms-windows.misc'
+    3 'comp.sys.ibm.pc.hardware'
+    4 'comp.sys.mac.hardware'
+    5 'comp.windows.x'
+1   recreation
+    7   'rec.autos'
+    8   'rec.motorcycles'
+    9   'rec.sport.baseball'
+    10  'rec.sport.hockey'
+2   science
+    11  'sci.crypt'
+    12  'sci.electronics'
+    13  'sci.med'
+    14  'sci.space'
+3   politics
+    16  'talk.politics.guns'
+    17  'talk.politics.mideast'
+    18  'talk.politics.misc'
+4   religion
+    0   'alt.atheism'
+    15  'soc.religion.christian'
+    19  'talk.religion.misc'
+"""
+
 
 def download_20news(data_home=DATA_HOME, news_home=NEWS_HOME,
                     news_cache_name=NEWS_CACHE_NAME):
@@ -67,23 +124,7 @@ def make_20news(data_home=DATA_HOME):
     news_data_test = fetch_20newsgroups(subset='test', categories=categories,
                                shuffle=True, random_state=42,
                                remove=remove, data_home=data_home)
-    
-    news4_data_train = fetch_20news4groups(subset='train',
-                                shuffle=True, random_state=42,
-                                remove=remove, data_home=data_home)
 
-    news4_data_test = fetch_20news4groups(subset='test',
-                               shuffle=True, random_state=42,
-                               remove=remove, data_home=data_home)
-    
-    news5_data_train = fetch_20news5groups(subset='train', categories=categories,
-                                shuffle=True, random_state=42,
-                                remove=remove, data_home=data_home)
-
-    news5_data_test = fetch_20news5groups(subset='test', categories=categories,
-                               shuffle=True, random_state=42,
-                               remove=remove, data_home=data_home)
-	
     # Populate the 20 newsgroup data into our result data dictionary.
     data = {}
     data['target_names'] = news_data_train.target_names
@@ -96,27 +137,51 @@ def make_20news(data_home=DATA_HOME):
     news20_path = os.path.join(data_home, NEWS20_CACHE_NAME)
     open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
 
-    data = {}
-    data['target_names'] = news4_data_train.target_names
-    data['train'] = news4_data_train.data
-    data['test'] = news4_data_test.data
-    data['train_target'] = news4_data_train.target
-    data['test_target'] = news4_data_test.target
+    # Populate the 4 newsgroup data into our result data dictionary.
+    data4_cats = {0:0, 1:1, 14:2, 19:3}
+    data4 = {
+        'target_names' : [data['target_names'][x] for x in data4_cats.keys()],
+        'train' : [],
+        'test' : [],
+        'train_target' : [],
+        'test_target' : []
+    }
+    for i,x in enumerate(data['train_target']):
+        if x in data4_cats.keys():
+            data4['train'].append(data['train'][i])
+            data4['train_target'].append(data4_cats[data['train_target'][i]])
+    for i,x in enumerate(data['test_target']):
+        if x in data4_cats.keys():
+            data4['test'].append(data['test'][i])
+            data4['test_target'].append(data4_cats[data['test_target'][i]])
 
-    # Write out a zipped pickle for the full 20 news set.
+    # Write out a zipped pickle for the 4 news set.
     news20_path = os.path.join(data_home, NEWS20_4_CACHE_NAME)
-    open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
+    open(news20_path, 'wb').write(pickle.dumps(data4).encode('zip'))
 
-    data = {}
-    data['target_names'] = news5_data_train.target_names
-    data['train'] = news5_data_train.data
-    data['test'] = news5_data_test.data
-    data['train_target'] = news5_data_train.target
-    data['test_target'] = news5_data_test.target
+    # Populate the 5 newsgroup data into our result data dictionary.
+    data5_cats = {0:4, 1:0, 2:0, 3:0, 4:0, 5:0, 7:1, 8:1, 9:1, 10:1, 11:2,
+        12:2, 13:2, 14:2, 15:4, 16:3, 17:3, 18:3, 19:4}
+    data5 = {
+        'target_names' : ['computers','recreation','science',
+                          'politics','religion'],
+        'train' : [],
+        'test' : [],
+        'train_target' : [],
+        'test_target' : []
+    }
+    for i,x in enumerate(data['train_target']):
+        if x in data5_cats.keys():
+            data5['train'].append(data['train'][i])
+            data5['train_target'].append(data5_cats[data['train_target'][i]])
+    for i,x in enumerate(data['test_target']):
+        if x in data5_cats.keys():
+            data5['test'].append(data['test'][i])
+            data5['test_target'].append(data5_cats[data['test_target'][i]])
 
-    # Write out a zipped pickle for the full 20 news set.
+    # Write out a zipped pickle for the 5 news set.
     news20_path = os.path.join(data_home, NEWS20_5_CACHE_NAME)
-    open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
+    open(news20_path, 'wb').write(pickle.dumps(data5).encode('zip'))
 
 
 def download_reuters(data_home=DATA_HOME, reuters_home=REUTERS_HOME,
@@ -220,6 +285,7 @@ def load_data(name, data_home=DATA_HOME):
     @param data_home: Directory to find the pickle. Default is ./data.
     """
     file_path = os.path.join(data_home, name + '.pkz')
+    print 'Loading: ' + file_path
     if not os.path.isfile(file_path):
         raise ValueError('Could not find the file %s' % file_path)
 
@@ -229,11 +295,18 @@ def load_data(name, data_home=DATA_HOME):
 # If run as a script, destroy and recreate all data pickles.
 if __name__ == '__main__':
 
-    if len(sys.argv) > 1:
-        data_home = sys.argv[1]
-    else:
-        data_home=DATA_HOME
+    # Parse command line arguments and options.
+    usage = 'usage: %prog [options]'
+    description = 'Download and construct training and testing data.'
+    p = optparse.OptionParser(usage=usage, description=description)
+    p.add_option('-d','--directory', action='store', dest='data_home',
+                 help='Home directory for data file (default: %s).' % DATA_HOME)
+    p.set_defaults(data_home=DATA_HOME)
 
+    (opts, args) = p.parse_args()
+
+    data_home = opts.data_home
+    print str(data_home)
     if os.path.isdir(data_home):
         shutil.rmtree(data_home)
 

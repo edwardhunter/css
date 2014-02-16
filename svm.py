@@ -64,12 +64,15 @@ def train(data, dataset, model, **kwargs):
 	clf = GridSearchCV(svr, parameters)
     else:	
     	if model == 'linear':
-        	clf = SVC(kernel='linear', C=svm_c, tol=svm_tol, max_iter=svm_max_iter)
+        	clf = SVC(kernel='linear', C=svm_c, tol=svm_tol,
+                      max_iter=svm_max_iter)
     	elif model == 'poly':
-        	clf = SVC(kernel='poly', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
+        	clf = SVC(kernel='poly', C=svm_c, tol=svm_tol,
+                      max_iter=svm_max_iter,
             degree=svm_degree, gamma=svm_gamma, coef0=svm_coef0)
     	elif model == 'rbf':
-        	clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol, max_iter=svm_max_iter,
+        	clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol,
+                      max_iter=svm_max_iter,
          	   gamma=svm_gamma)
     ############################################################
 
@@ -104,7 +107,8 @@ def train(data, dataset, model, **kwargs):
     # Create classifier and feature extractor file names.
     fappend = kwargs.get('fappend', None)
     dim = kwargs.get('dim', None)
-    (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
+    (cfname, vfname, dfname, _, _) = \
+        get_fnames(METHOD, model, dataset, dim, fappend)
 
     if not os.path.exists(MODEL_HOME):
         os.makedirs(MODEL_HOME)
@@ -223,7 +227,8 @@ def eval(data, dataset, model, **kwargs):
     # Create classifier, feature extractor and dim reducer names.
     fappend = kwargs.get('fappend', None)
     dim = kwargs.get('dim', None)
-    (cfname, vfname, dfname, figfname) = get_fnames(METHOD, model, dataset, dim, fappend)
+    (cfname, vfname, dfname, figfname, reportname) = \
+        get_fnames(METHOD, model, dataset, dim, fappend)
 
     # Predict test data.
     pred = predict(data_test, cfname, vfname, dfname=dfname)
@@ -237,12 +242,13 @@ def eval(data, dataset, model, **kwargs):
     ############################################################
 
     # Print evaluations.
-    print '-'*80
-    print("Classification report:")
-    print class_report
-
-    print '-'*80
-    print 'Confusion Matrix:'
+    report = ''
+    report += '-'*80 +'\n'
+    report += 'Classification Report:\n'
+    report += class_report
+    report += '\n\n'
+    report += '-'*80 +'\n'
+    report += 'Confusion Matrix:\n'
     n = len(data_target_names)
     conf_max = np.amax(conf_matrix)
     lmax = math.log(conf_max, 10)
@@ -252,7 +258,17 @@ def eval(data, dataset, model, **kwargs):
         row = ''
         for i in range(n):
             row += (fmtstr % int(conf_matrix[j,i]))
-        print row
+        report += row + '\n'
+
+    report += '\n\n'
+    print report
+
+    if not os.path.exists(REPORT_HOME):
+        os.makedirs(REPORT_HOME)
+    reportpath = os.path.join(REPORT_HOME, reportname)
+    rf = open(reportpath, 'w')
+    rf.write(report)
+    rf.close()
 
     # Save an image of the confusion matrix.
     if kwargs.get('confusion', False):
@@ -264,7 +280,7 @@ def eval(data, dataset, model, **kwargs):
         plt.set_cmap('hot')
         plt.colorbar()
         plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
-        figpath = os.path.join(MODEL_HOME, figfname)
+        figpath = os.path.join(REPORT_HOME, figfname)
         plt.savefig(figpath)
 
 
@@ -292,15 +308,16 @@ if __name__ == '__main__':
                  help='SVM penalty term, default=1.0.')
     p.add_option('--svm_tol', action='store', dest='svm_tol', type='float',
                  help='SVM tolerance, default =1e-3.')
-    p.add_option('--svm_max_iter', action='store', dest='svm_max_iter', type='int',
-                 help='SVM max iterations, default=no max.')
+    p.add_option('--svm_max_iter', action='store', dest='svm_max_iter',
+                 type='int', help='SVM max iterations, default=no max.')
     p.add_option('--svm_degree', action='store', dest='svm_degree', type='int',
                  help='SVM degree (poly), default=3.')
     p.add_option('--svm_gamma', action='store', dest='svm_gamma', type='float',
                  help='SVM gamma (poly, rbf), default=1/n_features.')
     p.add_option('--svm_coef0', action='store', dest='svm_coef0', type='float',
                  help='SVM independent coefficient (poly), default=0.0.')
-    p.add_option('-g','--gridsearch',action='store_true',dest='svm_grid_search',help='Grid Search for SVM')
+    p.add_option('-g','--gridsearch',action='store_true',dest='svm_grid_search',
+                 help='Grid Search for SVM')
     p.set_defaults(fappend=None, dim=None, confusion=True, overwrite=False,
                    svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
                    svm_gamma=0.0, svm_coef0=0.0,grid_search=False)
@@ -332,14 +349,21 @@ if __name__ == '__main__':
     data = load_data(dataset)
 
     # Create classifier, feature extractor and dim reducer names.
-    (cfname, vfname, dfname, _) = get_fnames(METHOD, model, dataset, dim, fappend)
+    (cfname, vfname, dfname, _, _) = \
+        get_fnames(METHOD, model, dataset, dim, fappend)
 
     # If we are specified to overwrite, or if required files missing, train and
     # store classifier components.
-    if overwrite \
-        or not(os.path.isfile(cfname) and os.path.isfile(vfname)) \
-        or (dfname and not os.path.isfile(dfname)):
-        train(data, dataset, model, dim=dim, fappend=fappend, **svm_kwargs)
+    cfpath = os.path.join(MODEL_HOME,cfname)
+    vfpath = os.path.join(MODEL_HOME,vfname)
+    model_files_present = os.path.isfile(cfpath) and os.path.isfile(vfpath)
+    if dfname:
+        dfpath = os.path.join(MODEL_HOME,dfname)
+        dim_files_present = os.path.isfile(dfpath)
+    else:
+        dim_files_present = True
+    if overwrite or not model_files_present or not dim_files_present:
+        train(data, dataset, model, dim=dim, fappend=fappend)
 
     # Evaluate classifier.
     eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)

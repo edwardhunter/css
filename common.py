@@ -21,8 +21,6 @@ from sklearn.preprocessing import normalize
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.datasets.twenty_newsgroups import fetch_20newsgroups
 from sklearn.datasets.twenty_newsgroups import download_20newsgroups
-from twenty_news5groups import *
-from twenty_news4groups import *
 from sklearn.grid_search import GridSearchCV
 
 # Import numpy for vector manipulation.
@@ -48,6 +46,7 @@ from urllib2 import urlopen
 
 # Default model directory.
 MODEL_HOME = os.path.join('.', 'models')
+REPORT_HOME =  os.path.join('.', 'reports')
 
 def get_fnames(method, model, dataset, dim=None, appendix=None):
     """
@@ -60,29 +59,20 @@ def get_fnames(method, model, dataset, dim=None, appendix=None):
     @return: triple containing classifier, extractor and figure filenames.
     """
 
-    cfname = '%s_%s_%s' % (method, model, dataset)
-    vfname = '%s_%s_%s' % (method, model, dataset)
-    dfname = '%s_%s_%s' % (method, model, dataset)
-    figfname = '%s_%s_%s' % (method, model, dataset)
+    base_name = '%s_%s_%s' % (method, model, dataset)
 
     if dim:
-        cfname = '%s_%i' % (cfname, dim)
-        vfname = '%s_%i' % (vfname, dim)
-        dfname = '%s_%i' % (dfname, dim)
-        figfname = '%s_%i' % (figfname, dim)
+        base_name = '%s_%i' % (base_name, dim)
 
     if appendix:
-        cfname = '%s_%s' % (cfname, appendix)
-        vfname = '%s_%s' % (vfname, appendix)
-        dfname = '%s_%s' % (dfname, appendix)
-        figfname = '%s_%s' % (figfname, appendix)
+        base_name = '%s_%s' % (base_name, appendix)
 
-    cfname = '%s_clf' % (cfname)
-    vfname = '%s_vec' % (vfname)
-    dfname = '%s_dim' % (dfname)
-    figfname = '%s_con.png' % (figfname)
-
+    cfname = '%s_clf' % (base_name)
+    vfname = '%s_vec' % (base_name)
+    dfname = '%s_dim' % (base_name)
+    figfname = '%s_confusion.png' % (base_name)
+    reportfname = '%s_report.txt' % (base_name)
     if not dim:
         dfname = None
 
-    return (cfname, vfname, dfname, figfname)
+    return (cfname, vfname, dfname, figfname, reportfname)
