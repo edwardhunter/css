@@ -258,7 +258,7 @@ if __name__ == '__main__':
                  dest='confusion', help='Save confusion image.')
     p.add_option('-o', '--overwrite', action='store_true',
                  dest='overwrite', help='Overwrite existing files.')
-    p.set_defaults(fappend=None, dim=None, confusion=True, overwrite=False)
+    p.set_defaults(fappend=None, dim=None, confusion=False, overwrite=False)
 
     ############################################################
     # Add method specific options.

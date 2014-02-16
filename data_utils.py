@@ -102,6 +102,7 @@ def download_20news(data_home=DATA_HOME, news_home=NEWS_HOME,
     @param news_cache_name: Name of the 20news cache pickle left in data_home.
     """
 
+    print 'Downloading dataset 20 Newsgroups.'
     cache_path = os.path.join(data_home, news_cache_name)
     twenty_home = os.path.join(data_home, news_home)
     download_20newsgroups(target_dir=twenty_home, cache_path=cache_path)

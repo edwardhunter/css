@@ -55,13 +55,13 @@ def train(data, dataset, model, **kwargs):
     svm_coef0 = kwargs.get('svm_coef0', 0.0)
     svm_grid_search=kwargs.get('svm_grid_search',False)
 
-
     if svm_grid_search:
         C_range = 10.0 ** np.arange(-2, 9)
         gamma_range = 10.0 ** np.arange(-5, 4)
         parameters={'gamma':gamma_range,'C':C_range}
         svr = SVC()
-	clf = GridSearchCV(svr, parameters)
+        clf = GridSearchCV(svr, parameters)
+
     else:	
     	if model == 'linear':
         	clf = SVC(kernel='linear', C=svm_c, tol=svm_tol,
@@ -72,8 +72,7 @@ def train(data, dataset, model, **kwargs):
             degree=svm_degree, gamma=svm_gamma, coef0=svm_coef0)
     	elif model == 'rbf':
         	clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol,
-                      max_iter=svm_max_iter,
-         	   gamma=svm_gamma)
+                      max_iter=svm_max_iter, gamma=svm_gamma)
     ############################################################
 
     ############################################################
@@ -318,7 +317,7 @@ if __name__ == '__main__':
                  help='SVM independent coefficient (poly), default=0.0.')
     p.add_option('-g','--gridsearch',action='store_true',dest='svm_grid_search',
                  help='Grid Search for SVM')
-    p.set_defaults(fappend=None, dim=None, confusion=True, overwrite=False,
+    p.set_defaults(fappend=None, dim=None, confusion=False, overwrite=False,
                    svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
                    svm_gamma=0.0, svm_coef0=0.0,grid_search=False)
 
