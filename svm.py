@@ -362,7 +362,7 @@ if __name__ == '__main__':
     else:
         dim_files_present = True
     if overwrite or not model_files_present or not dim_files_present:
-        train(data, dataset, model, dim=dim, fappend=fappend)
+        train(data, dataset, model, dim=dim, fappend=fappend, **svm_kwargs)
 
     # Evaluate classifier.
     eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)
