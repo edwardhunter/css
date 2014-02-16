@@ -34,7 +34,7 @@ def train(data, dataset, model, **kwargs):
         raise ValueError('Invalid data dictionary.')
 
     if not isinstance(dataset, str):
-        raise ValueError('Invalid data dictionary.')
+        raise ValueError('Invalid dataset.')
 
     if not isinstance(model,str) or model not in MODELS:
         raise ValueError('Invalid model type parameter.')
