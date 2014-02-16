@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@package css.neighbors
+@package css
 @file css/neighbors.py
 @author Edward Hunter
 @author Your Name Here

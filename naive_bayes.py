@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@package css.naive_bayes
+@package css
 @file css/naive_bayes.py
 @author Edward Hunter
 @author Your Name Here

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@package css.svm
+@package css
 @file css/svm.py
 @author Edward Hunter
 @author K Sree Harsha

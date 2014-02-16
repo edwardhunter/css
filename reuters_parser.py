@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@package css.reuters_parser
+@package css
 @file css/reuters_parser.py
 @author Edward Hunter
 @brief Class for parsing SGML Reuters-21578 data.

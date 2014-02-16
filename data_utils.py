@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@package css.data_utils
+@package css
 @file css/data_utils.py
 @author Edward Hunter
 @author K Sree Harsha

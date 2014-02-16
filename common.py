@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@package css.common
+@package css
 @file css/common.py
 @author Edward Hunter
 @author K Sree Harsha

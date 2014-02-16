@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-@package css.template_supervised
+@package css
 @file css/template_supervised.py
 @author Edward Hunter
 @author Your Name Here
