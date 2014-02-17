@@ -36,7 +36,7 @@ REUTERS10_CACHE_NAME = "reuters21578-10.pkz"
 DATASETS = ('20news','20news4', '20news5', 'reuters21578-10')
 
 """
-20 Newsgroups labels
+20 Newsgroups Labels
 0   'alt.atheism'
 1   'comp.graphics'
 2   'comp.os.ms-windows.misc'
@@ -46,7 +46,7 @@ DATASETS = ('20news','20news4', '20news5', 'reuters21578-10')
 6   'misc.forsale'
 7   'rec.autos'
 8   'rec.motorcycles'
-9  'rec.sport.baseball'
+9   'rec.sport.baseball'
 10  'rec.sport.hockey'
 11  'sci.crypt'
 12  'sci.electronics'
