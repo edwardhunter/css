@@ -221,7 +221,7 @@ def eval(data, dataset, model, **kwargs):
     ############################################################
 
     # Print evaluations.
-    report = ''
+    report = 'Report File: %s\n' % reportname
     report += '-'*80 +'\n'
     report += 'Classification Report:\n'
     report += class_report
