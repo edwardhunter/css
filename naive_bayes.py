@@ -250,16 +250,30 @@ def eval(data, dataset, model, **kwargs):
     rf.write(report)
     rf.close()
 
-    # Save an image of the confusion matrix.
-    if kwargs.get('confusion', False):
-        plt.pcolor(np.flipud(conf_matrix))
+    # Create an image of the log confusion matrix.
+    confusion_image_type =  kwargs.get('confusion', None)
+    if not confusion_image_type:
+        pass
+    elif confusion_image_type not in ('linear','log'):
+        warnstr = 'WARNING: unrecognized confusion image option '
+        warnstr += '"%s"' % confusion_image_type
+        warnstr += '\nConfusion image not saved.'
+        print warnstr
+    else:
+        if confusion_image_type == 'log':
+            log_conf_matrix = np.log10(conf_matrix+1)
+            plt.pcolor(np.flipud(log_conf_matrix))
+            title = '%s %s Log Confusion, %s' % (METHOD, model, dataset)
+        elif confusion_image_type == 'linear':
+            plt.pcolor(np.flipud(conf_matrix))
+            title = '%s %s Confusion, %s' % (METHOD, model, dataset)
         plt.xticks(np.arange(n)+0.5, np.arange(1,n+1))
         plt.yticks(np.arange(n)+0.5, np.arange(n,0, -1))
         plt.xlabel('Predicted Category')
         plt.ylabel('True Category')
         plt.set_cmap('hot')
         plt.colorbar()
-        plt.title('%s %s Confusion, %s' % (METHOD, model, dataset))
+        plt.title(title)
         figpath = os.path.join(REPORT_HOME, figfname)
         plt.savefig(figpath)
 
@@ -278,11 +292,11 @@ if __name__ == '__main__':
                  help='File name appendix string.')
     p.add_option('-d','--dim', action='store', dest='dim', type='int',
                  help='Reduced feature dimension integer.')
-    p.add_option('-c', '--confusion', action='store_true',
-                 dest='confusion', help='Save confusion image.')
+    p.add_option('-c', '--confusion', action='store',
+                 dest='confusion', help='Save confusion image. Options: linear, log')
     p.add_option('-o', '--overwrite', action='store_true',
                  dest='overwrite', help='Overwrite existing files.')
-    p.set_defaults(fappend=None, dim=None, confusion=False, overwrite=False)
+    p.set_defaults(fappend=None, dim=None, confusion=None, overwrite=False)
 
     (opts, args) = p.parse_args()
     if len(args) < 2:
