@@ -59,8 +59,8 @@ DATASETS = ('20news','20news4', '20news5', 'reuters21578-10')
 19  'talk.religion.misc'
 
 4 Newgroups Labels:
-0   'alt.atheism'
 1   'comp.graphics'
+7   'rec.autos'
 14  'sci.space'
 19  'talk.religion.misc'
 
@@ -139,7 +139,7 @@ def make_20news(data_home=DATA_HOME):
     open(news20_path, 'wb').write(pickle.dumps(data).encode('zip'))
 
     # Populate the 4 newsgroup data into our result data dictionary.
-    data4_cats = {0:0, 1:1, 14:2, 19:3}
+    data4_cats = {1:0, 7:1, 14:2, 19:3}
     data4 = {
         'target_names' : [data['target_names'][x] for x in data4_cats.keys()],
         'train' : [],
