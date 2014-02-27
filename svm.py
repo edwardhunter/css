@@ -305,7 +305,7 @@ if __name__ == '__main__':
     # Parse command line arguments and options.
     usage = 'usage: %prog [options] model dataset'
     usage += ('\n\tmodel = %s\n\tdataset = %s') % (MODELS, DATASETS)
-    description = 'Train and evaluate supervised classifiers.'
+    description = 'Train and evaluate support vector supervised classifiers.'
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-f','--fappend', action='store', dest='fappend',
                  help='File name appendix string.')
