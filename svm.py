@@ -57,17 +57,18 @@ def train(data, dataset, model, **kwargs):
     svm_grid_search=kwargs.get('svm_grid_search',False)
 
     if svm_grid_search:
-        # Comments containt short ranges for easy testing.
+        # Comments contain short ranges for easy testing.
         C_range = 10.0 ** np.arange(-1, 3)
         #C_range = [1.0,10.0]
-        degree_range = np.arange(2,6)
-        coef0_range = np.arange(0,11)
+        degree_range = [2, 3]
+        coef0_range = [0, 1, 10]
         gamma_range = 10.0 ** np.arange(-2, 2)
         #gamma_range = [0.1, 1.0]
         param_grid = dict(
             kernel=[model],
             tol=[svm_tol],
             max_iter=[svm_max_iter],
+            #cache_size=[1000], # So far efficiency not enhanced by cache.
             C=C_range,
             )
         if model == 'linear':
