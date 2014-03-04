@@ -43,6 +43,7 @@ import copy
 import random
 import shutil
 from urllib2 import urlopen
+from collections import Counter
 
 # Default model directory.
 MODEL_HOME = os.path.join('.', 'models')
