@@ -14,6 +14,7 @@ from common import *
 # Define method and models available.
 METHOD = 'SVM'
 MODELS = ('linear','poly','rbf')
+GS_FAPPEND = ''
 
 # Good results using default linear kernel and
 # rbf with svm_c=8 and svm_gamma=0.5.
@@ -56,13 +57,34 @@ def train(data, dataset, model, **kwargs):
     svm_grid_search=kwargs.get('svm_grid_search',False)
 
     if svm_grid_search:
-        C_range = 10.0 ** np.arange(-2, 9)
-        gamma_range = 10.0 ** np.arange(-5, 4)
-        parameters={'gamma':gamma_range,'C':C_range}
-        svr = SVC()
-        clf = GridSearchCV(svr, parameters)
+        # Comments containt short ranges for easy testing.
+        C_range = 10.0 ** np.arange(-1, 3)
+        #C_range = [1.0,10.0]
+        degree_range = np.arange(2,6)
+        coef0_range = np.arange(0,11)
+        gamma_range = 10.0 ** np.arange(-2, 2)
+        #gamma_range = [0.1, 1.0]
+        param_grid = dict(
+            kernel=[model],
+            tol=[svm_tol],
+            max_iter=[svm_max_iter],
+            C=C_range,
+            )
+        if model == 'linear':
+            pass
 
-    else:	
+        elif model == 'ploy':
+            param_grid['degree']=degree_range
+            param_grid['coef0']=coef0_range
+            param_grid['gamma']=gamma_range
+
+        elif model == 'rbf':
+            param_grid['gamma']=gamma_range
+
+        svr = SVC()
+        clf = GridSearchCV(svr, param_grid=param_grid, n_jobs=-1, verbose=5)
+
+    else:
     	if model == 'linear':
         	clf = SVC(kernel='linear', C=svm_c, tol=svm_tol,
                       max_iter=svm_max_iter)
@@ -101,6 +123,11 @@ def train(data, dataset, model, **kwargs):
     start = time.time()
     clf.fit(x_train, data_train_target)
     print 'Trained in %f seconds.' % (time.time() - start)
+    if svm_grid_search:
+        print 'Best score: ' + str(clf.best_score_)
+        print 'Optimal parameters: '
+        for k,v in clf.best_params_.iteritems():
+            print '%s=%s' % (k, str(v))
     ############################################################
 
     # Create classifier and feature extractor file names.
