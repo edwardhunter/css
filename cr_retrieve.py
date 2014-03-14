@@ -22,16 +22,24 @@ from bs4 import BeautifulSoup
 #<a href="http://beta.congress.gov/congressional-record/2009/08/07/senate-section/article/S9065-2">prayer</a>
 #http://beta.congress.gov/congressional-record/2009/08/07/senate-section/article/S9078-8
 
+# Possible network errors to be handled.
+# IOError: [Errno socket error] [Errno 60] Operation timed out
+# IOError: [Errno 54] Connection reset by peer
+
+
 BASE_URL = 'http://beta.congress.gov'
 
 PARA_START_EXPRS = re.compile(r'^\s{2}\w+',re.MULTILINE)
 SPEECH_EXPR = re.compile(r'^ {,3}[^\s]+.*\n', re.MULTILINE)
-SPEAKER_EXPR = re.compile(r' {,3}(Mr.|Ms.|Mrs.) ([A-Za-z]+)(of \w+)?\.')
+#SPEAKER_EXPR = re.compile(r' {,3}(Mr.|Ms.|Mrs.) ([A-Za-z]+)(of \w+)?\.')
+SPEAKER_EXPR = re.compile(r' {,3}(Mr.|Ms.|Mrs.) ([A-Za-z]+)\.?( of \w+\.)?')
 
+# These patterns signale the end or interruption in a speech.
 IGNORE_PATTERNS = [
     r'\s+The PRESIDING OFFICER',
     r'\s+ There being no objection',
     r'\s+The ACTING PRESIDENT',
+    r'\s+The VICE PRESIDENT',
     r'\s+The (assistant )?legislative clerk',
     r'\s+The resolution|\s+The preamble',
     r'\s+At the request of',
@@ -52,20 +60,21 @@ IGNORE_PATTERNS = [
     r'\s+A message from the .+ was',
     r'\s+At .+(a|p)\.m\., a message from the',
     r'\s+\w+ received by the Senate:',
-    r'\s+\w+There being no objection'
+    r'\s+\w+There being no objection',
+    r'\s+.+addressed the .+\.',                 #Mrs. HUTCHISON addressed the chair.
 ]
 
+# These patterns are non speech content to be removed.
 SUB_PATTERNS =[
     r'\[+.+]+\n+',
     r'__+',
     r'^\n'
 ]
 
+NO_TRIES = 10
+
 IGNORE_EXPRS = [re.compile(x) for x in IGNORE_PATTERNS]
 SUB_EXPRS = [re.compile(x) for x in SUB_PATTERNS]
-
-#RULE4_PATTERN = r'\s+By(\s+\w+)+'
-#EXPR4 = re.compile(RULE4_PATTERN)
 
 
 def download_articles_by_congress(congress_no, limit=None):
@@ -98,9 +107,21 @@ def download_articles_by_congress(congress_no, limit=None):
                       (BASE_URL, congress_no)
 
     # Download and parse the congress HTML and grab all senate tags.
-    f = opener.open(cr_congress_url)
-    soup1 = BeautifulSoup(f)
-    tags1 = soup1.find_all(href=expr1)
+    tries = 0
+    while True:
+        try:
+            f = opener.open(cr_congress_url)
+            soup1 = BeautifulSoup(f)
+            tags1 = soup1.find_all(href=expr1)
+            tries = 0
+            break
+
+        except IOError as ex:
+            print 'ERROR: ' + str(ex)
+            tries += 1
+            if tries > NO_TRIES:
+                raise
+            time.sleep(10)
 
     # For each senate tag in the congress.
     starttime = time.time()
@@ -114,9 +135,21 @@ def download_articles_by_congress(congress_no, limit=None):
         print 'Extracting: %s' % cr_daily_url
 
         # Download and parse the daily transcript HTML.
-        f = opener.open(cr_daily_url)
-        soup2 = BeautifulSoup(f)
-        tags2 = soup2.find_all(href=expr2)
+        tries = 0
+        while True:
+            try:
+                f = opener.open(cr_daily_url)
+                soup2 = BeautifulSoup(f)
+                tags2 = soup2.find_all(href=expr2)
+                tries = 0
+                break
+
+            except IOError as ex:
+                print 'ERROR: ' + str(ex)
+                tries += 1
+                if tries > NO_TRIES:
+                    raise
+                time.sleep(10)
 
         # For each article tag in the daily transcript.
         for tag2 in tags2:
@@ -133,9 +166,21 @@ def download_articles_by_congress(congress_no, limit=None):
             article_title = tag2.get_text()
 
             print '...Extracting: %s' % cr_article_url
-            f = opener.open(cr_article_url)
-            soup3 = BeautifulSoup(f)
-            tags3 = soup3.find_all('pre')
+            tries = 0
+            while True:
+                try:
+                    f = opener.open(cr_article_url)
+                    soup3 = BeautifulSoup(f)
+                    tags3 = soup3.find_all('pre')
+                    tries = 0
+                    break
+
+                except IOError as ex:
+                    print 'ERROR: ' + str(ex)
+                    tries += 1
+                    if tries > NO_TRIES:
+                        raise
+                    time.sleep(10)
 
             # Extract article text.
             if len(tags3)!=1:
@@ -252,7 +297,7 @@ if __name__ == '__main__':
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-d','--download', action='store_true', dest='download',
                  help='Congress number to download and store.')
-    p.add_option('-l','--dimit', action='store', dest='limit',
+    p.add_option('-l','--limit', action='store', dest='limit',
                  type='int', help='Limit the number of article downloads.')
     p.add_option('-p','--process', action='store_true', dest='process',
                 help='Process congress file for speech content.')
