@@ -16,14 +16,14 @@ import pickle
 
 from bs4 import BeautifulSoup
 
-
+# CR daily and article tags and URLs.
 #<a href="/congressional-record/2009/senate-section/page/S1473-1614">S1473-1614</a>
 #/congressional-record/2009/senate-section/page/S1991-2035
 #<a href="http://beta.congress.gov/congressional-record/2009/08/07/senate-section/article/S9065-2">prayer</a>
 #http://beta.congress.gov/congressional-record/2009/08/07/senate-section/article/S9078-8
 
 # DW Nominate Senate data URL.
-#ftp://voteview.com/junkord/SL01112D21_BSSE.dat
+DWN_URL = 'ftp://voteview.com/junkord/SL01112D21_BSSE.dat'
 
 # DW Nominate line format and regex pattern.
 # 112 29936 48 0 SOUTH ?? 200 DEMINT   ??  0.900  0.010  0.172  0.206  0.563   -59.22317  369   26  0.852
@@ -96,7 +96,6 @@ STOP_PATTERNS = [
 
 # These patterns are non speech content to be removed.
 REMOVE_PATTERNS =[
-    #r' \n\n *\[.+\]\n\n',
     r' *\[.+\]',
     r' *__+',
     r' {10,}[^ ].*'
@@ -309,7 +308,7 @@ def segment_speakers(art):
             speech += line
 
     if len(speech) >0 and current_speaker:
-        result.append((current_speaker, speech))
+        result.append((current_speaker.upper(), speech))
 
     return result
 
@@ -381,29 +380,99 @@ def create_dwn(fname=DW_NOMINATE_FNAME):
             no_votes            = int(m.group(15))
             no_errors           = int(m.group(16))
             geom_mean_prob      = float(m.group(17))
-            key = (congress, name)
-            val = [congress, icpsr, state_code, district, state, party,
-                   name, coord_1, coord_2, coord_1_error, coord_2_error,
-                   corr, log_likelihood, no_votes, no_errors, geom_mean_prob]
-            scores_dict[key] = val
+            if state != 'USA':
+                key = (congress, name)
+                val = [congress, icpsr, state_code, district, state, party,
+                       name, coord_1, coord_2, coord_1_error, coord_2_error,
+                       corr, log_likelihood, no_votes, no_errors, geom_mean_prob]
+                scores_dict[key] = val
 
     f = open('dw_nominate.pkz','wb')
     f.write(pickle.dumps(scores_dict).encode('zip'))
     f.close()
 
 
-def create_labled_data(congress_no_start, congress_no_stop,
+def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
                        fname=DW_NOMINATE_FNAME):
     """
     Create labled data for a given contress.
     @param congress_no: Int congress number to label.
     """
+
+    # Load DW Nominate scores.
     try:
         f = open('dw_nominate.pkz','rb')
     except:
         create_dwn(fname)
         f = open('dw_nominate.pkz','rb')
     scores = pickle.loads(f.read().decode('zip'))
+    f.close()
+    vals = scores.values()
+
+    # Assemble training data.
+    train = []
+    train_target = []
+    for congress in range(congress_no_train,congress_no_test):
+        fname = make_fname(congress,'combined')
+        congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
+
+        conservative_scores = [(x[6], x[7])  for x in vals if x[0] == congress and x[7]>0]
+        conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
+        conservative_scores = conservative_scores[:25]
+        liberal_scores = [(x[6], abs(x[7]))  for x in vals if x[0] == congress and x[7]<0]
+        liberal_scores.sort(key= lambda tup: tup[1], reverse=True)
+        liberal_scores = liberal_scores[:25]
+
+        for i in range(count):
+            try:
+                name = conservative_scores[i][0]
+                train.append(congress_data[name])
+                train_target.append(1)
+            except KeyError:
+                print 'ERROR no data for: %s in congress %i' % (name, congress)
+            try:
+                name = liberal_scores[i][0]
+                train.append(congress_data[name])
+                train_target.append(0)
+            except KeyError:
+                print 'ERROR no data for: %s in congress %i' % (name, congress)
+
+    # Assemble test data.
+    test = []
+    test_target = []
+    fname = make_fname(congress_no_test,'combined')
+    congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
+    for i in range(count):
+        conservative_scores = [(x[6], x[7])  for x in vals if x[0] == congress_no_test and x[7]>0]
+        conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
+        conservative_scores = conservative_scores[:25]
+        liberal_scores = [(x[6], abs(x[7]))  for x in vals if x[0] == congress_no_test and x[7]<0]
+        liberal_scores.sort(key= lambda tup: tup[1], reverse=True)
+        liberal_scores = liberal_scores[:25]
+
+        try:
+            name = conservative_scores[i][0]
+            test.append(congress_data[name])
+            test_target.append(1)
+        except KeyError:
+            print 'ERROR no data for: %s in congress %i' % (name, congress_no_test)
+
+        try:
+            name = liberal_scores[i][0]
+            test.append(congress_data[liberal_scores[i][0]])
+            test_target.append(0)
+        except KeyError:
+            print 'ERROR no data for: %s in congress %i' % (name, congress_no_test)
+
+    # Create and save data object.
+    data = {}
+    data['target_names'] = ['liberal', 'conservative']
+    data['train'] = train
+    data['train_target'] = train_target
+    data['test'] = test
+    data['test_target'] = test_target
+    f = open('congressional_record.pkz', 'wb')
+    f.write(pickle.dumps(data).encode('zip'))
     f.close()
 
 
