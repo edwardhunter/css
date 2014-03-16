@@ -1,5 +1,8 @@
 .idea
 *.pyc
+*.pk
+*.pkz
+*.txt
 .DS_Store
 /models
 /reports
