@@ -300,6 +300,7 @@ def segment_speakers(art):
         speaker_match = SPEAKER_EXPR.match(line)
         if speaker_match:
             if current_speaker:
+                speech = filter_states_and_senators(speech)
                 result.append((current_speaker, speech))
                 speech = ''
             current_speaker = speaker_match.group(2)
@@ -322,11 +323,12 @@ def filter_states_and_senators(speech):
     @param speech: Speech text to filter.
     @return speech: filtered speech.
     """
-
     senator_exprs = []
     for x in SENATORS:
-        pattern = r'(Mr\.\s+|Mrs\.\s+|Ms\.\s+|Senator\s+)([A-Z]+\s+)?%s' % x
+        pattern = r'(Mr\.\s+|Mrs\.\s+|Ms\.\s+|Senator\s+|Sen\.\s+|Hon\.\s+)([A-Z]+\s+)?%s' % x
         senator_exprs.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
+    pattern = r'(Senator\s+|Sen\.\s+)([A-Z]+\s+)?([A-Z]+)'
+    senator_exprs.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
 
     state_pattern1 = r''
     state_pattern2 = r''
@@ -375,11 +377,11 @@ def make_fname(congress_no, type, ext='pkz'):
     return fname
 
 
-def create_dwn(fname=DW_NOMINATE_FNAME):
+def create_dwn(fname=DW_NOMINATE_FNAME, save=False):
     """
-    Parse and save a dw-nominate data object
+    Parse and return a dw nominate scores dict. Optionally save as a pickle.
     @param fname: File name for dw-nominate senate data.
-    @return result: xxx.
+    @return result: dict of dw nominate data.
     """
 
     # Read in dw nominate file.
@@ -421,14 +423,16 @@ def create_dwn(fname=DW_NOMINATE_FNAME):
                        corr, log_likelihood, no_votes, no_errors, geom_mean_prob]
                 scores_dict[key] = val
 
-    f = open('dw_nominate.pkz','wb')
-    f.write(pickle.dumps(scores_dict).encode('zip'))
-    f.close()
-    senators = set([x[1] for x in scores_dict.keys() if x[0]>=103])
-    f = open('senators.pkz','wb')
-    f.write(pickle.dumps(senators).encode('zip'))
-    f.close()
+    if save:
+        f = open('dw_nominate.pkz','wb')
+        f.write(pickle.dumps(scores_dict).encode('zip'))
+        f.close()
+        senators = set([x[1] for x in scores_dict.keys() if x[0]>=103])
+        f = open('senators.pkz','wb')
+        f.write(pickle.dumps(senators).encode('zip'))
+        f.close()
 
+    return scores_dict
 
 def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
                        fname=DW_NOMINATE_FNAME):
@@ -438,14 +442,7 @@ def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
     """
 
     # Load DW Nominate scores.
-    try:
-        f = open('dw_nominate.pkz','rb')
-    except:
-        create_dwn(fname)
-        f = open('dw_nominate.pkz','rb')
-    scores = pickle.loads(f.read().decode('zip'))
-    f.close()
-    vals = scores.values()
+    scores = create_dwn(fname)
 
     # Assemble training data.
     train = []
@@ -480,13 +477,14 @@ def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
     test_target = []
     fname = make_fname(congress_no_test,'combined')
     congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
+    conservative_scores = [(x[6], x[7])  for x in vals if x[0] == congress_no_test and x[7]>0]
+    conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
+    conservative_scores = conservative_scores[:25]
+    liberal_scores = [(x[6], abs(x[7]))  for x in vals if x[0] == congress_no_test and x[7]<0]
+    liberal_scores.sort(key= lambda tup: tup[1], reverse=True)
+    liberal_scores = liberal_scores[:25]
+
     for i in range(count):
-        conservative_scores = [(x[6], x[7])  for x in vals if x[0] == congress_no_test and x[7]>0]
-        conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
-        conservative_scores = conservative_scores[:25]
-        liberal_scores = [(x[6], abs(x[7]))  for x in vals if x[0] == congress_no_test and x[7]<0]
-        liberal_scores.sort(key= lambda tup: tup[1], reverse=True)
-        liberal_scores = liberal_scores[:25]
 
         try:
             name = conservative_scores[i][0]
@@ -584,6 +582,11 @@ if __name__ == '__main__':
             filtered_text, patterns = filter_lines(articles[i][4], opts.verbose)
             all_patterns.update(patterns)
             speeches = segment_speakers(filtered_text)
+            #print '='*120
+            #print 'Processed Speeches:\n\n'
+            #for xxx in speeches:
+            #    print '-'*120
+            #    print xxx[1]
             for speech in speeches:
                 processed_speeches.append((articles[i][0], articles[i][1],
                         articles[i][2], articles[i][3], speech[0], speech[1]))
@@ -610,7 +613,7 @@ if __name__ == '__main__':
         if not processed_speeches:
             fname = make_fname(congress_no, 'speeches')
             f = open(fname, 'rb')
-            articles = pickle.loads(f.read().decode('zip'))
+            processed_speeches = pickle.loads(f.read().decode('zip'))
             f.close()
         fname = make_fname(congress_no,'dump','txt')
         f = open(fname,'w')
