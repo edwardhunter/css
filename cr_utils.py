@@ -16,6 +16,8 @@ import pickle
 
 from bs4 import BeautifulSoup
 
+from data_utils import STATES, SENATORS
+
 # CR daily and article tags and URLs.
 #<a href="/congressional-record/2009/senate-section/page/S1473-1614">S1473-1614</a>
 #/congressional-record/2009/senate-section/page/S1991-2035
@@ -105,8 +107,8 @@ REMOVE_PATTERNS =[
 NO_TRIES = 10
 SLEEP_TIME = 10
 
-STOP_EXPRS = [re.compile(x) for x in STOP_PATTERNS]
-REMOVE_EXPRS = [re.compile(x) for x in REMOVE_PATTERNS]
+STOP_EXPRS = [re.compile(X) for X in STOP_PATTERNS]
+REMOVE_EXPRS = [re.compile(X) for X in REMOVE_PATTERNS]
 
 
 def download_articles_by_congress(congress_no, limit=None):
@@ -308,9 +310,41 @@ def segment_speakers(art):
             speech += line
 
     if len(speech) >0 and current_speaker:
+        speech = filter_states_and_senators(speech)
         result.append((current_speaker.upper(), speech))
 
     return result
+
+
+def filter_states_and_senators(speech):
+    """
+    Filter out state and senator names.
+    @param speech: Speech text to filter.
+    @return speech: filtered speech.
+    """
+
+    senator_exprs = []
+    for x in SENATORS:
+        pattern = r'(Mr\.\s+|Mrs\.\s+|Ms\.\s+|Senator\s+)([A-Z]+\s+)?%s' % x
+        senator_exprs.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
+
+    state_pattern1 = r''
+    state_pattern2 = r''
+    for x in STATES:
+        x = x.replace(' ','\s+')
+        state_pattern1 += r' %s|' % x
+        state_pattern2 += r'\n%s|' % x
+    state_pattern1 = state_pattern1[:-1]
+    state_pattern2 = state_pattern2[:-1]
+    state_exp1 = re.compile(state_pattern1, re.MULTILINE|re.IGNORECASE)
+    state_exp2 = re.compile(state_pattern2, re.MULTILINE|re.IGNORECASE)
+
+    for x in senator_exprs:
+        speech = x.sub('SENATOR_NAME', speech)
+    speech = state_exp1.sub(' STATE_NAME', speech)
+    speech = state_exp2.sub('\nSTATE_NAME', speech)
+
+    return speech
 
 
 def combine_speeches(speeches):
@@ -389,6 +423,10 @@ def create_dwn(fname=DW_NOMINATE_FNAME):
 
     f = open('dw_nominate.pkz','wb')
     f.write(pickle.dumps(scores_dict).encode('zip'))
+    f.close()
+    senators = set([x[1] for x in scores_dict.keys() if x[0]>=103])
+    f = open('senators.pkz','wb')
+    f.write(pickle.dumps(senators).encode('zip'))
     f.close()
 
 
@@ -471,10 +509,32 @@ def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
     data['train_target'] = train_target
     data['test'] = test
     data['test_target'] = test_target
-    f = open('congressional_record.pkz', 'wb')
+    f = open('senate.pkz', 'wb')
     f.write(pickle.dumps(data).encode('zip'))
     f.close()
 
+
+def dump_states_and_senators():
+    """
+    Print a list of state names and senators to the console.
+    """
+    # Load DW Nominate scores.
+    try:
+        f = open('dw_nominate.pkz','rb')
+    except:
+        create_dwn(fname)
+        f = open('dw_nominate.pkz','rb')
+    scores = pickle.loads(f.read().decode('zip'))
+    f.close()
+    keys = scores.keys()
+    vals = scores.values()
+
+    senators = set([x[1] for x in keys])
+    for x in senators:
+        print x
+    states = set([x[4] for x in vals])
+    print '\n\n'
+    print str(states)
 
 if __name__ == '__main__':
 
@@ -527,6 +587,8 @@ if __name__ == '__main__':
             for speech in speeches:
                 processed_speeches.append((articles[i][0], articles[i][1],
                         articles[i][2], articles[i][3], speech[0], speech[1]))
+            print 'Processing congress %s      %f complete.' % \
+                  (congress_no, float(i)/float(len(articles)))
         speech_dict = combine_speeches(processed_speeches)
 
         fname = make_fname(congress_no, 'speeches')
