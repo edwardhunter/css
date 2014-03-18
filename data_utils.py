@@ -33,57 +33,6 @@ REUTERS_CACHE_NAME = "reuters21578.pkz"
 REUTERS10_IDX_NAME = "reuters21578-10-idx.pkz"
 REUTERS10_CACHE_NAME = "reuters21578-10.pkz"
 
-STATES = set(['LOUISIANA', 'VERMONT', 'GEORGIA', 'WASHINGTON', 'MINNESOTA',
-              'NORTH DAKOTA', 'KANSAS', 'FLORIDA', 'NORTH CAROLINA', 'ALASKA',
-              'SOUTH DAKOTA', 'MICHIGAN', 'PENNSYLVANIA', 'MISSOURI',
-              'SOUTH CAROLINA', 'IOWA', 'RHODE ISLAND', 'ALABAMA', 'IDAHO',
-              'MASSACHUSETTS', 'ARKANSA', 'MISSISSIPPI', 'DELAWARE', 'OKLAHOMA',
-              'WEST VIRGINIA', 'HAWAII', 'CONNECTICUT', 'NEBRASKA', 'CALIFORNIA',
-              'NEW YORK', 'UTAH', 'WYOMING', 'OREGON', 'COLORADO', 'KENTUCKY',
-              'MARYLAND', 'OHIO', 'INDIANA', 'NEW JERSEY', 'NEVADA',
-              'NEW HAMPSHIRE', 'ARIZONA', 'VIRGINIA', 'NEW MEXICO', 'MONTANA',
-              'TENNESSEE', 'TEXAS', 'ILLINOIS', 'MAINE', 'WISCONSIN',
-              'N. DAKOTA', 'S. DAKOTA', 'N. CAROLINA', 'S. CAROLINA',
-              'W. VIRGINIA', 'N. MEXICO', 'N. YORK', 'N. HAMPSHIRE',
-              'N. JERSEY', 'RHODE I.'])
-
-# Sentor names from congresses 103-113.
-SENATORS = set(['TESTER', 'FRANKEN', 'LIEBERMAN', 'CORNYN', 'FAIRCLOTH', 'REED',
-                'LEAHY', 'AYOTTE', 'HELLER', 'DODD', 'INHOFE', 'DANFORTH',
-                'CASEY', 'KASSEBAUM', 'ALLARD', 'BUNNING', 'KENNEDY', 'BINGAMAN',
-                'EDWARDS', 'ROBERTS', 'PELL', 'HARKIN', 'DOLE', 'KEMPTHORNE',
-                'BLUNT', 'CARDIN', 'DORGAN', 'SANDERS', 'CANTWELL', 'MANCHIN',
-                'BROWNBACK', 'COATS', 'CRAIG', 'HOLLINGS', 'COCHRAN', 'NUNN',
-                'NELSON', 'MORAN', 'WARNER', 'VOINOVICH', 'ROBB', 'ALEXANDER',
-                'HELMS', 'GRASSLEY', 'ENZI', 'FRIST', 'MENENDEZ', 'MCCONNELL',
-                'TORRICELLI', 'BURR', 'COLLINS', 'DASCHLE', 'COONS', 'DEMINT',
-                'FEINSTEIN', 'KERRY', 'TOOMEY', 'JOHANNS', 'BENNETT', 'PORTMAN',
-                'CARNAHAN', 'SARBANES', 'ENSIGN', 'BOOZMAN', 'COBURN', 'RIEGLE',
-                'MERKLEY', 'BURRIS', 'BROWN', 'VITTER', 'MCCASKILL', 'HATFIELD',
-                'HAGAN', 'BARASSO', 'EXON', 'WELLSTONE', 'WALLOP', 'CAMPBELL',
-                'WHITEHOUSE', 'HUTCHISON', 'SIMPSON', 'LUGAR', 'CONRAD',
-                'CLINTON', 'WICKER', 'KYL', 'BYRD', 'KAUFMAN', 'GILLIBRAND',
-                'BOXER', 'WOFFORD', 'JOHNSTON', 'OBAMA', 'GREGG', 'DURBIN',
-                'WEBB', 'INOUYE', 'STABENOW', 'AKAKA', 'DAYTON', 'SMITH',
-                'MURRAY', 'MARTINEZ', 'BIDEN', 'HEFLIN', 'HATCH', 'CARPER',
-                'HOEVEN', 'BEGICH', 'PACKWOOD', 'KERREY', 'COHEN', 'FITZGERALD',
-                'KRUEGER', 'MURKOWSKI', 'SHELBY', 'BURNS', 'DECONCINI', 'BOND',
-                'BAUCUS', 'LINCOLN', 'JOHNSON', 'LEVIN', 'CHAFEE', 'ROCKEFELLER',
-                'KOHL', 'LAUTENBERG', 'RISCH', 'JEFFORDS', 'DEWINE', 'BARRASSO',
-                'SUNUNU', 'BREAUX', 'DOMENICI', 'BUMPERS', 'LEE', 'STEVENS',
-                'MITCHELL', 'HAGEL', 'SCHUMER', 'REID', 'PRYOR', 'BRADLEY',
-                'THOMPSON', 'KLOBUCHAR', 'THUNE', 'ISAKSON', 'GRAMS', 'BRYAN',
-                'MILLER', 'THOMAS', 'MCCAIN', 'BOREN', 'RUBIO', 'CORZINE',
-                'MATHEWS', 'COLEMAN', 'GRAMM', 'GRAHAM', 'UDALL', 'NICKLES',
-                'SHAHEEN', 'GOODWIN', 'GORTON', 'SANTORUM', 'FEINGOLD', 'BENNET',
-                'LOTT', 'ASHCROFT', 'ROTH', 'BLUMENTHAL', 'MOYNIHAN', 'THURMOND',
-                'ALLEN', 'SNOWE', 'SPECTER', 'CLELAND', 'SIMON', 'PRESSLER',
-                'SESSIONS', 'COVERDELL', 'LEMIEUX', 'LANDRIEU', 'FORD', 'WYDEN',
-                'SALAZAR', 'DURENBERGER', 'TALENT', 'PAUL', 'ABRAHAM', 'MACK',
-                'MIKULSKI', 'GLENN', 'BAYH', 'FRAHM', 'CRAPO', 'HUTCHINSON',
-                'KIRK', 'CORKER', 'CHAMBLISS', 'METZENBAUM', 'SASSER'])
-
-
 DATASETS = ('20news','20news4', '20news5', 'reuters21578-10', 'senate')
 
 """

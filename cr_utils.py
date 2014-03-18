@@ -16,22 +16,22 @@ import pickle
 
 from bs4 import BeautifulSoup
 
-from data_utils import STATES, SENATORS
-
-# CR daily and article tags and URLs.
+# CR daily and article tags and URL formats.
 #<a href="/congressional-record/2009/senate-section/page/S1473-1614">S1473-1614</a>
 #/congressional-record/2009/senate-section/page/S1991-2035
 #<a href="http://beta.congress.gov/congressional-record/2009/08/07/senate-section/article/S9065-2">prayer</a>
 #http://beta.congress.gov/congressional-record/2009/08/07/senate-section/article/S9078-8
 
-# DW Nominate Senate data URL.
-DWN_URL = 'ftp://voteview.com/junkord/SL01112D21_BSSE.dat'
+# Possible network errors to be handled.
+# IOError: [Errno socket error] [Errno 60] Operation timed out
+# IOError: [Errno 54] Connection reset by peer
 
-# DW Nominate line format and regex pattern.
-# 112 29936 48 0 SOUTH ?? 200 DEMINT   ??  0.900  0.010  0.172  0.206  0.563   -59.22317  369   26  0.852
-# regex group      1       2       3       4       5           6       7       8              9             10            11            12            13            14            15      16      17
-DWN_PATTERN = r'\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([ A-Z]+)\s+(\d+)\s+([A-Z]+)([ A-Z\.]+)?\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(\d+)\s+(\d+)\s+(-?[\d\.]+)'
-DWN_EXPR = re.compile(DWN_PATTERN)
+# Network error retries and sleep time.
+NO_TRIES = 10
+SLEEP_TIME = 10
+
+# An error in the congress.gov website returns this article with congress 112.
+BAD_112_ARTICLE_URL = 'http://beta.congress.gov/congressional-record/2013/12/11/senate-section/article/S8609-1'
 
 # DW Nominate fields.
 """
@@ -53,18 +53,14 @@ DWN_EXPR = re.compile(DWN_PATTERN)
 16'geom_mean_prob',
 """
 
+# DW Nominate constants.
+# regex group      1       2       3       4       5           6       7       8              9             10            11            12            13            14            15      16      17
+DWN_PATTERN = r'\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([ A-Z]+)\s+(\d+)\s+([A-Z]+)([ A-Z\.]+)?\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(-?[\d\.]+)\s+(\d+)\s+(\d+)\s+(-?[\d\.]+)'
+DWN_EXPR = re.compile(DWN_PATTERN)
+DWN_URL = 'ftp://voteview.com/junkord/SL01112D21_BSSE.dat'
 DW_NOMINATE_FNAME = 'dw_nominate.txt'
 
-# Possible network errors to be handled.
-# IOError: [Errno socket error] [Errno 60] Operation timed out
-# IOError: [Errno 54] Connection reset by peer
-
-"""
-Load combined files.
-import pickle
-x = pickle.loads(open('congress_112_combined.pkz','rb').read().decode('zip'))
-"""
-
+# Base CR URL and speech beginning detector.
 BASE_URL = 'http://beta.congress.gov'
 SPEAKER_EXPR = re.compile(r' {,3}(Mr.|Ms.|Mrs.) ([A-Z][A-Za-z]+[A-Z])( of [^\.]+)?\.')
 
@@ -103,12 +99,75 @@ REMOVE_PATTERNS =[
     r' {10,}[^ ].*'
 ]
 
-# Network error retries and sleep time.
-NO_TRIES = 10
-SLEEP_TIME = 10
-
 STOP_EXPRS = [re.compile(X) for X in STOP_PATTERNS]
 REMOVE_EXPRS = [re.compile(X) for X in REMOVE_PATTERNS]
+
+# State names.
+STATES = set(['LOUISIANA', 'VERMONT', 'GEORGIA', 'WASHINGTON', 'MINNESOTA',
+              'NORTH DAKOTA', 'KANSAS', 'FLORIDA', 'NORTH CAROLINA', 'ALASKA',
+              'SOUTH DAKOTA', 'MICHIGAN', 'PENNSYLVANIA', 'MISSOURI',
+              'SOUTH CAROLINA', 'IOWA', 'RHODE ISLAND', 'ALABAMA', 'IDAHO',
+              'MASSACHUSETTS', 'ARKANSA', 'MISSISSIPPI', 'DELAWARE', 'OKLAHOMA',
+              'WEST VIRGINIA', 'HAWAII', 'CONNECTICUT', 'NEBRASKA', 'CALIFORNIA',
+              'NEW YORK', 'UTAH', 'WYOMING', 'OREGON', 'COLORADO', 'KENTUCKY',
+              'MARYLAND', 'OHIO', 'INDIANA', 'NEW JERSEY', 'NEVADA',
+              'NEW HAMPSHIRE', 'ARIZONA', 'VIRGINIA', 'NEW MEXICO', 'MONTANA',
+              'TENNESSEE', 'TEXAS', 'ILLINOIS', 'MAINE', 'WISCONSIN',
+              'N. DAKOTA', 'S. DAKOTA', 'N. CAROLINA', 'S. CAROLINA',
+              'W. VIRGINIA', 'N. MEXICO', 'N. YORK', 'N. HAMPSHIRE',
+              'N. JERSEY', 'RHODE I.'])
+
+# Sentor names from congresses 103-113.
+SENATORS = set(['TESTER', 'FRANKEN', 'LIEBERMAN', 'CORNYN', 'FAIRCLOTH', 'REED',
+                'LEAHY', 'AYOTTE', 'HELLER', 'DODD', 'INHOFE', 'DANFORTH',
+                'CASEY', 'KASSEBAUM', 'ALLARD', 'BUNNING', 'KENNEDY', 'BINGAMAN',
+                'EDWARDS', 'ROBERTS', 'PELL', 'HARKIN', 'DOLE', 'KEMPTHORNE',
+                'BLUNT', 'CARDIN', 'DORGAN', 'SANDERS', 'CANTWELL', 'MANCHIN',
+                'BROWNBACK', 'COATS', 'CRAIG', 'HOLLINGS', 'COCHRAN', 'NUNN',
+                'NELSON', 'MORAN', 'WARNER', 'VOINOVICH', 'ROBB', 'ALEXANDER',
+                'HELMS', 'GRASSLEY', 'ENZI', 'FRIST', 'MENENDEZ', 'MCCONNELL',
+                'TORRICELLI', 'BURR', 'COLLINS', 'DASCHLE', 'COONS', 'DEMINT',
+                'FEINSTEIN', 'KERRY', 'TOOMEY', 'JOHANNS', 'BENNETT', 'PORTMAN',
+                'CARNAHAN', 'SARBANES', 'ENSIGN', 'BOOZMAN', 'COBURN', 'RIEGLE',
+                'MERKLEY', 'BURRIS', 'BROWN', 'VITTER', 'MCCASKILL', 'HATFIELD',
+                'HAGAN', 'BARASSO', 'EXON', 'WELLSTONE', 'WALLOP', 'CAMPBELL',
+                'WHITEHOUSE', 'HUTCHISON', 'SIMPSON', 'LUGAR', 'CONRAD',
+                'CLINTON', 'WICKER', 'KYL', 'BYRD', 'KAUFMAN', 'GILLIBRAND',
+                'BOXER', 'WOFFORD', 'JOHNSTON', 'OBAMA', 'GREGG', 'DURBIN',
+                'WEBB', 'INOUYE', 'STABENOW', 'AKAKA', 'DAYTON', 'SMITH',
+                'MURRAY', 'MARTINEZ', 'BIDEN', 'HEFLIN', 'HATCH', 'CARPER',
+                'HOEVEN', 'BEGICH', 'PACKWOOD', 'KERREY', 'COHEN', 'FITZGERALD',
+                'KRUEGER', 'MURKOWSKI', 'SHELBY', 'BURNS', 'DECONCINI', 'BOND',
+                'BAUCUS', 'LINCOLN', 'JOHNSON', 'LEVIN', 'CHAFEE', 'ROCKEFELLER',
+                'KOHL', 'LAUTENBERG', 'RISCH', 'JEFFORDS', 'DEWINE', 'BARRASSO',
+                'SUNUNU', 'BREAUX', 'DOMENICI', 'BUMPERS', 'LEE', 'STEVENS',
+                'MITCHELL', 'HAGEL', 'SCHUMER', 'REID', 'PRYOR', 'BRADLEY',
+                'THOMPSON', 'KLOBUCHAR', 'THUNE', 'ISAKSON', 'GRAMS', 'BRYAN',
+                'MILLER', 'THOMAS', 'MCCAIN', 'BOREN', 'RUBIO', 'CORZINE',
+                'MATHEWS', 'COLEMAN', 'GRAMM', 'GRAHAM', 'UDALL', 'NICKLES',
+                'SHAHEEN', 'GOODWIN', 'GORTON', 'SANTORUM', 'FEINGOLD', 'BENNET',
+                'LOTT', 'ASHCROFT', 'ROTH', 'BLUMENTHAL', 'MOYNIHAN', 'THURMOND',
+                'ALLEN', 'SNOWE', 'SPECTER', 'CLELAND', 'SIMON', 'PRESSLER',
+                'SESSIONS', 'COVERDELL', 'LEMIEUX', 'LANDRIEU', 'FORD', 'WYDEN',
+                'SALAZAR', 'DURENBERGER', 'TALENT', 'PAUL', 'ABRAHAM', 'MACK',
+                'MIKULSKI', 'GLENN', 'BAYH', 'FRAHM', 'CRAPO', 'HUTCHINSON',
+                'KIRK', 'CORKER', 'CHAMBLISS', 'METZENBAUM', 'SASSER'])
+
+# Patterns for senator names and states to be obfuscated.
+SENATOR_EXPRS = []
+for X in SENATORS:
+    pattern = r'(\n| |[^A-Z])%s([^A-Z])' % X
+    SENATOR_EXPRS.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
+
+STATE_EXPRS = []
+for X in STATES:
+    Y = X.split(' ')
+    pattern = r'(\n| |[^A-Z])%s' % Y[0]
+    if len(Y) > 1:
+        pattern += r' *(\n|)%s' % Y[1]
+    else:
+        pattern += r'()'
+    STATE_EXPRS.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
 
 
 def download_articles_by_congress(congress_no, limit=None):
@@ -190,7 +249,13 @@ def download_articles_by_congress(congress_no, limit=None):
             if limit and len(articles) >= limit:
                 return articles
 
+            # Extract artile URL. Skip if it is a website error.
             cr_article_url =  tag2['href']
+            if congress_no == 112 and  cr_article_url == BAD_112_ARTICLE_URL:
+                print 'Skipping congress.gov error URL:'
+                print cr_article_url
+                continue
+
             # Get date (year, month, day)
             rhs = cr_article_url.replace(BASE_URL, '')
             m = expr2.match(rhs)
@@ -199,6 +264,7 @@ def download_articles_by_congress(congress_no, limit=None):
             article_id = cr_article_url.split('/')[-1]
             article_title = tag2.get_text()
 
+            # Download article.
             print '...Extracting: %s' % cr_article_url
             tries = 0
             while True:
@@ -225,11 +291,43 @@ def download_articles_by_congress(congress_no, limit=None):
                 articles.append((congress_no, date, article_id, article_title,
                                  tag3.get_text()))
 
+        # Update progress.
         print 'Retrieved %i articles.' % len(articles)
         delta = (time.time() - starttime)/60.0
         print 'Processed %f percent of Congress %i dailies in %f minutes.' % \
               (float(count)/float(len(tags1)), congress_no, delta)
+
     return articles
+
+
+def process_speeches(congress_no, articles, verbose=False):
+    """
+    Process and combine speeches.
+    @param congress_no: The congress number. For ouput only.
+    @param articles: List of articles to process.
+    @param verbose: Dump output to console.
+    @return speech_dict: dictionary of combined speeches.
+    @return processed_speeches: list of processed speeches.
+    @return all_expressions: All speech end expressions encountered.
+    """
+    starttime = time.time()
+    processed_speeches = []
+    all_patterns = set([])
+    for i in range(len(articles)):
+        filtered_text, patterns = filter_lines(articles[i][4], verbose)
+        all_patterns.update(patterns)
+        speeches = segment_speakers(filtered_text)
+        for speech in speeches:
+            processed_speeches.append((articles[i][0], articles[i][1],
+                    articles[i][2], articles[i][3], speech[0], speech[1]))
+        delta = time.time() - starttime
+        print 'Processing congress %s      %.4f complete in %.2f minutes.' % \
+              (congress_no, float(i)/float(len(articles)), delta/60.0)
+    speech_dict = combine_speeches(processed_speeches)
+    delta = time.time() - starttime
+    print 'Processed congress %s in %f minutes.' % (congress_no, delta/60.0)
+
+    return speech_dict, processed_speeches, all_patterns
 
 
 def filter_lines(art, verbose=False):
@@ -323,28 +421,10 @@ def filter_states_and_senators(speech):
     @param speech: Speech text to filter.
     @return speech: filtered speech.
     """
-    senator_exprs = []
-    for x in SENATORS:
-        pattern = r'(Mr\.\s+|Mrs\.\s+|Ms\.\s+|Senator\s+|Sen\.\s+|Hon\.\s+)([A-Z]+\s+)?%s' % x
-        senator_exprs.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
-    pattern = r'(Senator\s+|Sen\.\s+)([A-Z]+\s+)?([A-Z]+)'
-    senator_exprs.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
-
-    state_pattern1 = r''
-    state_pattern2 = r''
-    for x in STATES:
-        x = x.replace(' ','\s+')
-        state_pattern1 += r' %s|' % x
-        state_pattern2 += r'\n%s|' % x
-    state_pattern1 = state_pattern1[:-1]
-    state_pattern2 = state_pattern2[:-1]
-    state_exp1 = re.compile(state_pattern1, re.MULTILINE|re.IGNORECASE)
-    state_exp2 = re.compile(state_pattern2, re.MULTILINE|re.IGNORECASE)
-
-    for x in senator_exprs:
-        speech = x.sub('SENATOR_NAME', speech)
-    speech = state_exp1.sub(' STATE_NAME', speech)
-    speech = state_exp2.sub('\nSTATE_NAME', speech)
+    for x in SENATOR_EXPRS:
+        speech = x.sub(r'\1SENATOR_NAME\2', speech)
+    for x in STATE_EXPRS:
+        speech = x.sub(r'\1\2STATE_NAME', speech)
 
     return speech
 
@@ -366,18 +446,18 @@ def combine_speeches(speeches):
     return result
 
 
-def make_fname(congress_no, type, ext='pkz'):
+def make_fname(congress_no, suffix, ext='pkz'):
     """
     Create filename for CR download or speech files.
     @param congress_no: int congress number.
-    @param type: the file type string.
+    @param suffix: the file type string.
     @return fname: the file name.
     """
-    fname = 'congress_%i_%s.%s' % (congress_no, type, ext)
+    fname = 'congress_%i_%s.%s' % (congress_no, suffix, ext)
     return fname
 
 
-def create_dwn(fname=DW_NOMINATE_FNAME, save=False):
+def create_dwn(fname=DW_NOMINATE_FNAME):
     """
     Parse and return a dw nominate scores dict. Optionally save as a pickle.
     @param fname: File name for dw-nominate senate data.
@@ -423,22 +503,17 @@ def create_dwn(fname=DW_NOMINATE_FNAME, save=False):
                        corr, log_likelihood, no_votes, no_errors, geom_mean_prob]
                 scores_dict[key] = val
 
-    if save:
-        f = open('dw_nominate.pkz','wb')
-        f.write(pickle.dumps(scores_dict).encode('zip'))
-        f.close()
-        senators = set([x[1] for x in scores_dict.keys() if x[0]>=103])
-        f = open('senators.pkz','wb')
-        f.write(pickle.dumps(senators).encode('zip'))
-        f.close()
-
     return scores_dict
+
 
 def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
                        fname=DW_NOMINATE_FNAME):
     """
     Create labled data for a given contress.
-    @param congress_no: Int congress number to label.
+    @param congress_no_train: Int beginning congress number for training.
+    @param congress_no_test: Int congress number for testing.
+    @param count: Int number of most extreme ideologies to include.
+    @param fname: Int dw nominate file name.
     """
 
     # Load DW Nominate scores.
@@ -459,12 +534,14 @@ def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
         liberal_scores = liberal_scores[:25]
 
         for i in range(count):
+
             try:
                 name = conservative_scores[i][0]
                 train.append(congress_data[name])
                 train_target.append(1)
             except KeyError:
                 print 'ERROR no data for: %s in congress %i' % (name, congress)
+
             try:
                 name = liberal_scores[i][0]
                 train.append(congress_data[name])
@@ -512,28 +589,6 @@ def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
     f.close()
 
 
-def dump_states_and_senators():
-    """
-    Print a list of state names and senators to the console.
-    """
-    # Load DW Nominate scores.
-    try:
-        f = open('dw_nominate.pkz','rb')
-    except:
-        create_dwn(fname)
-        f = open('dw_nominate.pkz','rb')
-    scores = pickle.loads(f.read().decode('zip'))
-    f.close()
-    keys = scores.keys()
-    vals = scores.values()
-
-    senators = set([x[1] for x in keys])
-    for x in senators:
-        print x
-    states = set([x[4] for x in vals])
-    print '\n\n'
-    print str(states)
-
 if __name__ == '__main__':
 
     # Parse command line arguments and options.
@@ -554,13 +609,15 @@ if __name__ == '__main__':
     p.add_option('-e','--expressions', action='store_true', dest='expressions',
                 help='Dump stop expression data to console.')
 
+    # Parse args, get congress number.
     (opts, args) = p.parse_args()
     if len(args) < 1:
         p.print_usage()
         sys.exit(1)
-
     congress_no = int(args[0])
     articles = None
+
+    # Download and save congress articles.
     if opts.download:
         limit = opts.limit
         articles = download_articles_by_congress(congress_no, limit)
@@ -569,55 +626,42 @@ if __name__ == '__main__':
         f.write(pickle.dumps(articles).encode('zip'))
         f.close()
 
-    processed_speeches = []
-    all_patterns = set()
+    # Process congress articles and save.
+    p_speeches = []
     if opts.process:
         if not articles:
             fname = make_fname(congress_no, 'download')
             f = open(fname, 'rb')
             articles = pickle.loads(f.read().decode('zip'))
             f.close()
-
-        for i in range(len(articles)):
-            filtered_text, patterns = filter_lines(articles[i][4], opts.verbose)
-            all_patterns.update(patterns)
-            speeches = segment_speakers(filtered_text)
-            #print '='*120
-            #print 'Processed Speeches:\n\n'
-            #for xxx in speeches:
-            #    print '-'*120
-            #    print xxx[1]
-            for speech in speeches:
-                processed_speeches.append((articles[i][0], articles[i][1],
-                        articles[i][2], articles[i][3], speech[0], speech[1]))
-            print 'Processing congress %s      %f complete.' % \
-                  (congress_no, float(i)/float(len(articles)))
-        speech_dict = combine_speeches(processed_speeches)
+        s_dict, p_speeches, patterns = process_speeches(congress_no,
+                                                       articles, opts.verbose)
 
         fname = make_fname(congress_no, 'speeches')
         f = open(fname, 'wb')
-        f.write(pickle.dumps(processed_speeches).encode('zip'))
+        f.write(pickle.dumps(p_speeches).encode('zip'))
         f.close()
         fname = make_fname(congress_no, 'combined')
         f = open(fname, 'wb')
-        f.write(pickle.dumps(speech_dict).encode('zip'))
+        f.write(pickle.dumps(s_dict).encode('zip'))
         f.close()
 
         if opts.verbose or opts.expressions:
             print '-'*80
             print 'STOP PATTERNS:'
-            for x in all_patterns:
+            for x in patterns:
                 print repr(x)
 
+    # Save a text dump of processed articles.
     if opts.text:
-        if not processed_speeches:
+        if not p_speeches:
             fname = make_fname(congress_no, 'speeches')
             f = open(fname, 'rb')
-            processed_speeches = pickle.loads(f.read().decode('zip'))
+            p_speeches = pickle.loads(f.read().decode('zip'))
             f.close()
         fname = make_fname(congress_no,'dump','txt')
         f = open(fname,'w')
-        for x in processed_speeches:
+        for x in p_speeches:
             metadata = '\n\n' + '-'*120 + '\n'
             metadata += 'congress: %i date: %s article: %s speaker: %s' % \
                         (x[0], str(x[1]), x[2], x[4])
