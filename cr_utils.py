@@ -16,6 +16,8 @@ import pickle
 
 from bs4 import BeautifulSoup
 
+# TODO: Add timeouts for hanging URL reads.
+
 # CR daily and article tags and URL formats.
 #<a href="/congressional-record/2009/senate-section/page/S1473-1614">S1473-1614</a>
 #/congressional-record/2009/senate-section/page/S1991-2035
@@ -107,7 +109,7 @@ STATES = set(['LOUISIANA', 'VERMONT', 'GEORGIA', 'WASHINGTON', 'MINNESOTA',
               'NORTH DAKOTA', 'KANSAS', 'FLORIDA', 'NORTH CAROLINA', 'ALASKA',
               'SOUTH DAKOTA', 'MICHIGAN', 'PENNSYLVANIA', 'MISSOURI',
               'SOUTH CAROLINA', 'IOWA', 'RHODE ISLAND', 'ALABAMA', 'IDAHO',
-              'MASSACHUSETTS', 'ARKANSA', 'MISSISSIPPI', 'DELAWARE', 'OKLAHOMA',
+              'MASSACHUSETTS', 'ARKANSAS', 'MISSISSIPPI', 'DELAWARE', 'OKLAHOMA',
               'WEST VIRGINIA', 'HAWAII', 'CONNECTICUT', 'NEBRASKA', 'CALIFORNIA',
               'NEW YORK', 'UTAH', 'WYOMING', 'OREGON', 'COLORADO', 'KENTUCKY',
               'MARYLAND', 'OHIO', 'INDIANA', 'NEW JERSEY', 'NEVADA',
@@ -283,7 +285,7 @@ def download_articles_by_congress(congress_no, limit=None):
                     time.sleep(SLEEP_TIME)
 
             # Extract article text.
-            if len(tags3)!=1:
+            if len(tags3)>1:
                 print '-'*80
                 print 'WARNING: multiple texts found!'
                 print '-'*80
@@ -526,40 +528,50 @@ def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
         fname = make_fname(congress,'combined')
         congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
 
-        conservative_scores = [(x[6], x[7])  for x in vals if x[0] == congress and x[7]>0]
-        conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
-        conservative_scores = conservative_scores[:25]
-        liberal_scores = [(x[6], abs(x[7]))  for x in vals if x[0] == congress and x[7]<0]
-        liberal_scores.sort(key= lambda tup: tup[1], reverse=True)
-        liberal_scores = liberal_scores[:25]
+        conservative_scores = []
+        liberal_scores = []
+        for k,v in scores.iteritems():
+            if k[0] == congress and v[7]>0:
+                conservative_scores.append((k[1],v[7]))
+            conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
+            conservative_scores = conservative_scores[:25]
+            if k[0] == congress and v[7]<0:
+                liberal_scores.append((k[1],v[7]))
+            liberal_scores.sort(key= lambda tup: tup[1])
+            liberal_scores = liberal_scores[:25]
 
         for i in range(count):
-
             try:
                 name = conservative_scores[i][0]
                 train.append(congress_data[name])
                 train_target.append(1)
             except KeyError:
-                print 'ERROR no data for: %s in congress %i' % (name, congress)
+                print 'WARNING no data for: %s in congress %i' % (name, congress)
 
             try:
                 name = liberal_scores[i][0]
                 train.append(congress_data[name])
                 train_target.append(0)
             except KeyError:
-                print 'ERROR no data for: %s in congress %i' % (name, congress)
+                print 'WARNING no data for: %s in congress %i' % (name, congress)
 
     # Assemble test data.
     test = []
     test_target = []
     fname = make_fname(congress_no_test,'combined')
     congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
-    conservative_scores = [(x[6], x[7])  for x in vals if x[0] == congress_no_test and x[7]>0]
-    conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
-    conservative_scores = conservative_scores[:25]
-    liberal_scores = [(x[6], abs(x[7]))  for x in vals if x[0] == congress_no_test and x[7]<0]
-    liberal_scores.sort(key= lambda tup: tup[1], reverse=True)
-    liberal_scores = liberal_scores[:25]
+
+    conservative_scores = []
+    liberal_scores = []
+    for k,v in scores.iteritems():
+        if k[0] == congress_no_test and v[7]>0:
+            conservative_scores.append((k[1],v[7]))
+        conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
+        conservative_scores = conservative_scores[:25]
+        if k[0] == congress_no_test and v[7]<0:
+            liberal_scores.append((k[1],v[7]))
+        liberal_scores.sort(key= lambda tup: tup[1])
+        liberal_scores = liberal_scores[:25]
 
     for i in range(count):
 
@@ -568,14 +580,14 @@ def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
             test.append(congress_data[name])
             test_target.append(1)
         except KeyError:
-            print 'ERROR no data for: %s in congress %i' % (name, congress_no_test)
+            print 'WARNING no data for: %s in congress %i' % (name, congress_no_test)
 
         try:
             name = liberal_scores[i][0]
-            test.append(congress_data[liberal_scores[i][0]])
+            test.append(congress_data[name])
             test_target.append(0)
         except KeyError:
-            print 'ERROR no data for: %s in congress %i' % (name, congress_no_test)
+            print 'WARNING no data for: %s in congress %i' % (name, congress_no_test)
 
     # Create and save data object.
     data = {}
