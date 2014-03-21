@@ -140,11 +140,17 @@ def train(data, dataset, model, **kwargs):
         print("dimensionality: %d" % clf.coef_.shape[1])
         print("density: %f" % density(clf.coef_))
         print str(clf.coef_.shape)
-        if svm_top>0:
+        if model == 'linear' and svm_top>0:
             feature_names = np.asarray(vectorizer.get_feature_names())
-            print 'Top Features:'
-            top = clf.coef_.toarray().argsort(axis=1)[0][::-1][:svm_top]
-            for idx in top:
+            top = clf.coef_.toarray().argsort(axis=1)[0]
+            #top_pos = clf.coef_.toarray().argsort(axis=1)[0][::-1][:svm_top]
+            top_pos = top[-svm_top:]
+            top_neg = top[:svm_top]
+            print 'Top Positive Features:'
+            for idx in top_pos:
+                print feature_names[idx]
+            print 'Top Negative Features:'
+            for idx in top_neg:
                 print feature_names[idx]
     ############################################################
 
@@ -361,7 +367,7 @@ if __name__ == '__main__':
     p.add_option('-o', '--overwrite', action='store_true', dest='overwrite',
                  help='Overwrite existing files.')
     p.add_option('--df_min', action='store',type='float', dest='df_min',
-                 help='Minimum document frequency proportion (default=1).')
+                 help='Minimum document frequency proportion (default=None).')
     p.add_option('--df_max', action='store', type='float', dest='df_max',
                  help='Maximum document frequency proportion (default=1.0).')
 

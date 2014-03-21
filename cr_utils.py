@@ -104,20 +104,57 @@ REMOVE_PATTERNS =[
 STOP_EXPRS = [re.compile(X) for X in STOP_PATTERNS]
 REMOVE_EXPRS = [re.compile(X) for X in REMOVE_PATTERNS]
 
-# State names.
-STATES = set(['LOUISIANA', 'VERMONT', 'GEORGIA', 'WASHINGTON', 'MINNESOTA',
-              'NORTH DAKOTA', 'KANSAS', 'FLORIDA', 'NORTH CAROLINA', 'ALASKA',
-              'SOUTH DAKOTA', 'MICHIGAN', 'PENNSYLVANIA', 'MISSOURI',
-              'SOUTH CAROLINA', 'IOWA', 'RHODE ISLAND', 'ALABAMA', 'IDAHO',
-              'MASSACHUSETTS', 'ARKANSAS', 'MISSISSIPPI', 'DELAWARE', 'OKLAHOMA',
-              'WEST VIRGINIA', 'HAWAII', 'CONNECTICUT', 'NEBRASKA', 'CALIFORNIA',
-              'NEW YORK', 'UTAH', 'WYOMING', 'OREGON', 'COLORADO', 'KENTUCKY',
-              'MARYLAND', 'OHIO', 'INDIANA', 'NEW JERSEY', 'NEVADA',
-              'NEW HAMPSHIRE', 'ARIZONA', 'VIRGINIA', 'NEW MEXICO', 'MONTANA',
-              'TENNESSEE', 'TEXAS', 'ILLINOIS', 'MAINE', 'WISCONSIN',
-              'N. DAKOTA', 'S. DAKOTA', 'N. CAROLINA', 'S. CAROLINA',
-              'W. VIRGINIA', 'N. MEXICO', 'N. YORK', 'N. HAMPSHIRE',
-              'N. JERSEY', 'RHODE I.'])
+# State and citizen names.
+STATES = set([
+    r'([^A-Z])LOUISIAN(?:A|IANS?)()',
+    r'([^A-Z])VERMONT(?:ERS?)?()',
+    r'([^A-Z])GEORGIA(?:NS?)?()',
+    r'([^A-Z])WASHINGTON(?:IANS?)?()',
+    r'([^A-Z])MINNESOTA(?:NS?)?()',
+    r'([^A-Z])(?:NORTH|N\.|SOUTH|S\.)? *(\n|) *DAKOTA(?:NS?)?',
+    r'([^A-Z])KANSA(?:S|NS?)()',
+    r'([^A-Z])FLORID(?:A|IAN?)()',
+    r'([^A-Z])(?:NORTH|N\.|SOUTH|S\.)? *(\n|) *CAROLIN(?:A|IANS?)',
+    r'([^A-Z])ALASKA(?:NS?)?()',
+    r'([^A-Z])MICHIGAN(?:IANS?)?()',
+    r'([^A-Z])PENNSYLVANIA(?:NS?)?()',
+    r'([^A-Z])MISSOURI(?:ANS?)?()',
+    r'([^A-Z])IOWA(?:NS?)?()',
+    r'([^A-Z])RHODE *(\n|) *ISLAND(?:ERS?)?',
+    r'([^A-Z])ALABAM(?:A|IANS?|ANS?)()',
+    r'([^A-Z])IDAHO(?:ANS?)?()',
+    r'([^A-Z])MASSACHUSETTS(?:ANS?)?()',
+    r'([^A-Z])ARKANSA(?:S|NS?)()',
+    r'([^A-Z])MISSISSIPPI(?:ANS?)?()',
+    r'([^A-Z])DELAWARE(?:ANS?)?()',
+    r'([^A-Z])OKLAHOMA(?:NS?)?()',
+    r'([^A-Z])VIRGINIA(?:NS?)?()',
+    r'([^A-Z])HAWAII(?:ANS?)?()',
+    r'([^A-Z])CONNECTICUT(?:ERS?)?()',
+    r'([^A-Z])NEBRASKA(?:NS?)?()',
+    r'([^A-Z])CALIFORNIA(?:NS?)?()',
+    r'([^A-Z])NEW *(\n|) *YORK(?:ERS?)?',
+    r'([^A-Z])UTAH(?:NS?)?()',
+    r'([^A-Z])WYOMING(?:ITES?)?()',
+    r'([^A-Z])OREGON(?:IANS?)?()',
+    r'([^A-Z])COLORAD(?:O|ANS?)()',
+    r'([^A-Z])KENTUCK(?:Y|IANS?)()',
+    r'([^A-Z])MARYLAND(?:ERS?)?()',
+    r'([^A-Z])OHIO(?:ANS?)?()',
+    r'([^A-Z])INDIAN(?:A|IANS?)()',
+    r'([^A-Z])(?:NEW)? *(\n|) *JERSEY(?:ANS?)?',
+    r'([^A-Z])NEVADA(?:NS?)?()',
+    r'([^A-Z])(?:NEW)? *(\n|) *HAMPSHIR(?:E|ITES?)()',
+    r'([^A-Z])ARIZON(?:A|ANS?|IANS?)()',
+    r'([^A-Z])WEST *(\n|) *VIRGINIA(?:NS?)?',
+    r'([^A-Z])NEW *(\n|) *MEXIC(?:O|ANS?)()',
+    r'([^A-Z])MONTANA(?:NS?)?()',
+    r'([^A-Z])TENNESSE(?:E|ANS?)()',
+    r'([^A-Z])TEXA(?:S|NS?)()',
+    r'([^A-Z])ILLINOIS(?:IANS?)?()',
+    r'([^A-Z])MAINE(?:RS?)?()',
+    r'([^A-Z])WISCONSIN(?:ITES?)?()',
+])
 
 # Sentor names from congresses 103-113.
 SENATORS = set(['TESTER', 'FRANKEN', 'LIEBERMAN', 'CORNYN', 'FAIRCLOTH', 'REED',
@@ -161,15 +198,7 @@ for X in SENATORS:
     pattern = r'(\n| |[^A-Z])%s([^A-Z])' % X
     SENATOR_EXPRS.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
 
-STATE_EXPRS = []
-for X in STATES:
-    Y = X.split(' ')
-    pattern = r'(\n| |[^A-Z])%s' % Y[0]
-    if len(Y) > 1:
-        pattern += r' *(\n|)%s' % Y[1]
-    else:
-        pattern += r'()'
-    STATE_EXPRS.append(re.compile(pattern, re.MULTILINE|re.IGNORECASE))
+STATE_EXPRS = [re.compile(X,re.MULTILINE|re.IGNORECASE) for X in STATES]
 
 
 def download_articles_by_congress(congress_no, limit=None):
@@ -323,7 +352,7 @@ def process_speeches(congress_no, articles, verbose=False):
             processed_speeches.append((articles[i][0], articles[i][1],
                     articles[i][2], articles[i][3], speech[0], speech[1]))
         delta = time.time() - starttime
-        print 'Processing congress %s      %.4f complete in %.2f minutes.' % \
+        print 'Processing congress %s      %.3f complete in %.2f minutes.' % \
               (congress_no, float(i)/float(len(articles)), delta/60.0)
     speech_dict = combine_speeches(processed_speeches)
     delta = time.time() - starttime
@@ -425,10 +454,10 @@ def filter_states_and_senators(speech):
     """
     for x in SENATOR_EXPRS:
         #speech = x.sub(r'\1SENATOR_NAME\2', speech)
-        speech = x.sub(r'\1\2', speech)
+        speech = x.sub(r'\1???\2', speech)
     for x in STATE_EXPRS:
         #speech = x.sub(r'\1\2STATE_NAME', speech)
-        speech = x.sub(r'\1\2', speech)
+        speech = x.sub(r'\1???\2', speech)
 
     return speech
 
