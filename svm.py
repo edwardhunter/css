@@ -48,8 +48,13 @@ def train(data, dataset, model, **kwargs):
     ############################################################
     # Create feature extractor, classifier.
     ############################################################
+    df_min = kwargs.get('df_min',1)
+    df_max = kwargs.get('df_max',1.0)
     vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True,
-                    min_df=0.2, max_df=0.8)
+                    min_df=df_min, max_df=df_max)
+    #vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True)
+
+
     svm_c = kwargs.get('svm_c', 1.0)
     svm_tol = kwargs.get('svm_tol', 1e-3)
     svm_max_iter = kwargs.get('svm_max_iter', -1)
@@ -71,7 +76,6 @@ def train(data, dataset, model, **kwargs):
             kernel=[model],
             tol=[svm_tol],
             max_iter=[svm_max_iter],
-            #cache_size=[1000], # So far efficiency not enhanced by cache.
             C=C_range,
             )
         if model == 'linear':
@@ -135,13 +139,11 @@ def train(data, dataset, model, **kwargs):
     if hasattr(clf, 'coef_'):
         print("dimensionality: %d" % clf.coef_.shape[1])
         print("density: %f" % density(clf.coef_))
+        print str(clf.coef_.shape)
         if svm_top>0:
             feature_names = np.asarray(vectorizer.get_feature_names())
             print 'Top Features:'
             top = clf.coef_.toarray().argsort(axis=1)[0][::-1][:svm_top]
-            #b = a.argsort(axis=1)[0][::-1]
-            #print str(svm_top)
-            #print b[:30]
             for idx in top:
                 print feature_names[idx]
     ############################################################
@@ -358,6 +360,10 @@ if __name__ == '__main__':
                  dest='confusion', help='Save confusion image. Options: linear, log')
     p.add_option('-o', '--overwrite', action='store_true',
                  dest='overwrite', help='Overwrite existing files.')
+    p.add_option('--df_min', action='store',type='float',
+                 dest='df_min', help='Min doc frequency.')
+    p.add_option('--df_max', action='store', type='float',
+                 dest='df_max', help='Max. doc frequency.')
 
     # SVM options.
     p.add_option('--svm_c', action='store', dest='svm_c', type='float',
@@ -378,8 +384,8 @@ if __name__ == '__main__':
                  help='Show top N features for SVM (linear only), default=0.')
     p.set_defaults(fappend=None, dim=None, confusion=None, overwrite=False,
                    svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
-                   svm_gamma=0.0, svm_coef0=0.0,svm_gs=False,svm_top=0
-                   )
+                   svm_gamma=0.0, svm_coef0=0.0,svm_gs=False,svm_top=0,
+                   df_min=1.0, df_max=1.0)
 
     (opts, args) = p.parse_args()
     if len(args) < 2:
@@ -393,6 +399,9 @@ if __name__ == '__main__':
     dim = opts.dim
     confusion = opts.confusion
     overwrite = opts.overwrite
+    df_min = opts.df_min
+    if df_min == 1.0: df_min = 1
+    df_max = opts.df_max
 
     # Get svm options.
     svm_kwargs = {}
@@ -423,7 +432,8 @@ if __name__ == '__main__':
     else:
         dim_files_present = True
     if overwrite or not model_files_present or not dim_files_present:
-        train(data, dataset, model, dim=dim, fappend=fappend, **svm_kwargs)
+        train(data, dataset, model, dim=dim, fappend=fappend,
+              df_min=df_min, df_max=df_max, **svm_kwargs)
 
     # Evaluate classifier.
     eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)
