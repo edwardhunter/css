@@ -10,6 +10,7 @@
 
 # Import common modules and utilities.
 from common import *
+from sklearn.utils.extmath import density
 
 # Define method and models available.
 METHOD = 'SVM'
@@ -47,16 +48,18 @@ def train(data, dataset, model, **kwargs):
     ############################################################
     # Create feature extractor, classifier.
     ############################################################
-    vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True)
+    vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True,
+                    min_df=0.2, max_df=0.8)
     svm_c = kwargs.get('svm_c', 1.0)
     svm_tol = kwargs.get('svm_tol', 1e-3)
     svm_max_iter = kwargs.get('svm_max_iter', -1)
     svm_degree = kwargs.get('svm_degree', 3)
     svm_gamma = kwargs.get('svm_gamma', 0.0)
     svm_coef0 = kwargs.get('svm_coef0', 0.0)
-    svm_grid_search=kwargs.get('svm_grid_search',False)
+    svm_gs = kwargs.get('svm_gs',False)
+    svm_top = kwargs.get('svm_top',0)
 
-    if svm_grid_search:
+    if svm_gs:
         # Comments contain short ranges for easy testing.
         C_range = 10.0 ** np.arange(-1, 3)
         #C_range = [1.0,10.0]
@@ -124,11 +127,23 @@ def train(data, dataset, model, **kwargs):
     start = time.time()
     clf.fit(x_train, data_train_target)
     print 'Trained in %f seconds.' % (time.time() - start)
-    if svm_grid_search:
+    if svm_gs:
         print 'Best score: ' + str(clf.best_score_)
         print 'Optimal parameters: '
         for k,v in clf.best_params_.iteritems():
             print '%s=%s' % (k, str(v))
+    if hasattr(clf, 'coef_'):
+        print("dimensionality: %d" % clf.coef_.shape[1])
+        print("density: %f" % density(clf.coef_))
+        if svm_top>0:
+            feature_names = np.asarray(vectorizer.get_feature_names())
+            print 'Top Features:'
+            top = clf.coef_.toarray().argsort(axis=1)[0][::-1][:svm_top]
+            #b = a.argsort(axis=1)[0][::-1]
+            #print str(svm_top)
+            #print b[:30]
+            for idx in top:
+                print feature_names[idx]
     ############################################################
 
     # Create classifier and feature extractor file names.
@@ -357,11 +372,14 @@ if __name__ == '__main__':
                  help='SVM gamma (poly, rbf), default=1/n_features.')
     p.add_option('--svm_coef0', action='store', dest='svm_coef0', type='float',
                  help='SVM independent coefficient (poly), default=0.0.')
-    p.add_option('-g','--gridsearch',action='store_true',dest='svm_grid_search',
+    p.add_option('--svm_gs',action='store_true',dest='svm_gs',
                  help='Grid Search for SVM')
+    p.add_option('--svm_top',action='store',dest='svm_top',type='int',
+                 help='Show top N features for SVM (linear only), default=0.')
     p.set_defaults(fappend=None, dim=None, confusion=None, overwrite=False,
                    svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
-                   svm_gamma=0.0, svm_coef0=0.0,grid_search=False)
+                   svm_gamma=0.0, svm_coef0=0.0,svm_gs=False,svm_top=0
+                   )
 
     (opts, args) = p.parse_args()
     if len(args) < 2:
@@ -384,7 +402,8 @@ if __name__ == '__main__':
     svm_kwargs['svm_degree'] = opts.svm_degree
     svm_kwargs['svm_gamma'] = opts.svm_gamma
     svm_kwargs['svm_coef0'] = opts.svm_coef0
-    svm_kwargs['svm_grid_search']=opts.svm_grid_search
+    svm_kwargs['svm_gs']=opts.svm_gs
+    svm_kwargs['svm_top']=opts.svm_top
 
     # Load data.
     data = load_data(dataset)

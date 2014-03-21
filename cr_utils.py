@@ -424,9 +424,11 @@ def filter_states_and_senators(speech):
     @return speech: filtered speech.
     """
     for x in SENATOR_EXPRS:
-        speech = x.sub(r'\1SENATOR_NAME\2', speech)
+        #speech = x.sub(r'\1SENATOR_NAME\2', speech)
+        speech = x.sub(r'\1\2', speech)
     for x in STATE_EXPRS:
-        speech = x.sub(r'\1\2STATE_NAME', speech)
+        #speech = x.sub(r'\1\2STATE_NAME', speech)
+        speech = x.sub(r'\1\2', speech)
 
     return speech
 
@@ -508,7 +510,7 @@ def create_dwn(fname=DW_NOMINATE_FNAME):
     return scores_dict
 
 
-def create_labled_data(congress_no_train=107, congress_no_test=112, count=25,
+def create_labled_data(congress_no_train=109, congress_no_test=112, count=25,
                        fname=DW_NOMINATE_FNAME):
     """
     Create labled data for a given contress.
