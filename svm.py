@@ -143,7 +143,6 @@ def train(data, dataset, model, **kwargs):
         if model == 'linear' and svm_top>0:
             feature_names = np.asarray(vectorizer.get_feature_names())
             top = clf.coef_.toarray().argsort(axis=1)[0]
-            #top_pos = clf.coef_.toarray().argsort(axis=1)[0][::-1][:svm_top]
             top_pos = top[-svm_top:]
             top_neg = top[:svm_top]
             print 'Top Positive Features:'
