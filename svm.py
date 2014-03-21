@@ -360,10 +360,10 @@ if __name__ == '__main__':
                  dest='confusion', help='Save confusion image. Options: linear, log')
     p.add_option('-o', '--overwrite', action='store_true',
                  dest='overwrite', help='Overwrite existing files.')
-    p.add_option('--df_min', action='store',type='float',
-                 dest='df_min', help='Min doc frequency.')
-    p.add_option('--df_max', action='store', type='float',
-                 dest='df_max', help='Max. doc frequency.')
+    p.add_option('--df_min', action='store',type='float', dest='df_min',
+                 help='Minimum document frequency proportion (default=1).')
+    p.add_option('--df_max', action='store', type='float', dest='df_max',
+                 help='Maximum document frequency proportion (default=1.0).')
 
     # SVM options.
     p.add_option('--svm_c', action='store', dest='svm_c', type='float',
