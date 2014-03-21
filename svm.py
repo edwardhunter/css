@@ -356,10 +356,10 @@ if __name__ == '__main__':
                  help='File name appendix string.')
     p.add_option('-d','--dim', action='store', dest='dim', type='int',
                  help='Reduced feature dimension integer.')
-    p.add_option('-c', '--confusion', action='store',
-                 dest='confusion', help='Save confusion image. Options: linear, log')
-    p.add_option('-o', '--overwrite', action='store_true',
-                 dest='overwrite', help='Overwrite existing files.')
+    p.add_option('-c', '--confusion', action='store', dest='confusion',
+                 help='Save confusion image. Options: linear, log')
+    p.add_option('-o', '--overwrite', action='store_true', dest='overwrite',
+                 help='Overwrite existing files.')
     p.add_option('--df_min', action='store',type='float', dest='df_min',
                  help='Minimum document frequency proportion (default=1).')
     p.add_option('--df_max', action='store', type='float', dest='df_max',
