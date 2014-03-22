@@ -278,6 +278,26 @@ def make_reuters10(data_home=DATA_HOME, reuters_cache_name=REUTERS_CACHE_NAME,
     # Write out the populated reuters 10 dictionary.
     open(reuters10_cache_path, 'wb').write(pickle.dumps(data).encode('zip'))
 
+def get_cat_data(name, data_home=DATA_HOME):
+    """
+    Return a dict of data organized for inspection.
+    @param name: The data file name.
+    @data_home: The data file directory.
+    @return cat_data: A dict of data organized by category.
+    """
+    data = load_data(name, data_home)
+    cat_data = {'train' : {}, 'test' : {}}
+    for x in data['target_names']:
+        cat_data['train'][x] = []
+        cat_data['test'][x] = []
+    for i, x in enumerate(data['train_target']):
+        #print '-'*100
+        #print data['train'][i]
+        cat_data['train'][data['target_names'][x]].append(data['train'][i])
+    for i, x in enumerate(data['test_target']):
+        cat_data['test'][data['target_names'][x]].append(data['test'][i])
+    return cat_data
+
 
 def load_data(name, data_home=DATA_HOME):
     """
@@ -292,14 +312,21 @@ def load_data(name, data_home=DATA_HOME):
 
     data = pickle.loads(open(file_path, 'rb').read().decode('zip'))
     print 'Class Names:'
-    training_counts ={}
-    testing_counts ={}
+    training_total = 0
+    testing_total = 0
     for i, x in enumerate(data['target_names']):
         training_count = len([y for y in data['train_target'] if y==i])
         testing_count = len([y for y in data['test_target'] if y==i])
-        print '%5i  %50s  train size: %i, test size %i' % \
+        training_total += training_count
+        testing_total += testing_count
+        print '%5i  %25s  train size: %8i, test size: %8i' % \
               (i, x, training_count, testing_count)
+    print '%5s  %25s  train_size: %8i, test size: %8i' % \
+            ('', 'Totals:', training_total, testing_total)
+
+
     return data
+
 
 # If run as a script, destroy and recreate all data pickles.
 if __name__ == '__main__':
