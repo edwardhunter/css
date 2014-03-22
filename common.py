@@ -8,27 +8,6 @@
 @brief Common imports and utility functions.
 """
 
-# Import scikit modules for learning routines.
-from sklearn.naive_bayes import BernoulliNB
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neighbors.nearest_centroid import NearestCentroid
-from sklearn.svm import SVC, LinearSVC
-from sklearn import metrics
-from sklearn.preprocessing import normalize
-from sklearn.feature_selection import SelectKBest, chi2
-from sklearn.datasets.twenty_newsgroups import fetch_20newsgroups
-from sklearn.datasets.twenty_newsgroups import download_20newsgroups
-from sklearn.grid_search import GridSearchCV
-
-# Import numpy for vector manipulation.
-import numpy as np
-
-# Import matplotlib for plotting graphics.
-import matplotlib.pyplot as plt
-
 # Import python standard libraries.
 import pickle
 import time
@@ -43,7 +22,35 @@ import copy
 import random
 import shutil
 from urllib2 import urlopen
+import urllib
 from collections import Counter
+
+# Import numpy for vector manipulation.
+import numpy as np
+
+# Import scikit modules for learning routines.
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors.nearest_centroid import NearestCentroid
+from sklearn.svm import SVC, LinearSVC
+from sklearn import metrics
+from sklearn.preprocessing import normalize
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.datasets.twenty_newsgroups import fetch_20newsgroups
+from sklearn.datasets.twenty_newsgroups import download_20newsgroups
+from sklearn.grid_search import GridSearchCV
+from sklearn.utils.extmath import density
+
+
+# Import matplotlib for plotting graphics.
+import matplotlib.pyplot as plt
+
+# Import BeautifulSoup for HTML parsing.
+from bs4 import BeautifulSoup
+
 
 # Default model directory.
 MODEL_HOME = os.path.join('.', 'models')

@@ -290,8 +290,16 @@ def load_data(name, data_home=DATA_HOME):
     if not os.path.isfile(file_path):
         raise ValueError('Could not find the file %s' % file_path)
 
-    return pickle.loads(open(file_path, 'rb').read().decode('zip'))
-
+    data = pickle.loads(open(file_path, 'rb').read().decode('zip'))
+    print 'Class Names:'
+    training_counts ={}
+    testing_counts ={}
+    for i, x in enumerate(data['target_names']):
+        training_count = len([y for y in data['train_target'] if y==i])
+        testing_count = len([y for y in data['test_target'] if y==i])
+        print '%5i  %50s  train size: %i, test size %i' % \
+              (i, x, training_count, testing_count)
+    return data
 
 # If run as a script, destroy and recreate all data pickles.
 if __name__ == '__main__':

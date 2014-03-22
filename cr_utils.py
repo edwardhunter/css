@@ -7,14 +7,7 @@
 @brief Utility module for retrieving congress.gov data.
 """
 
-import urllib
-import re
-import time
-import sys
-import optparse
-import pickle
-
-from bs4 import BeautifulSoup
+from common import *
 
 # TODO: Add timeouts for hanging URL reads.
 
@@ -539,12 +532,14 @@ def create_dwn(fname=DW_NOMINATE_FNAME):
     return scores_dict
 
 
-def create_labled_data(congress_no_train=109, congress_no_test=112, count=25,
-                       fname=DW_NOMINATE_FNAME):
+def create_labled_data(train_start, train_stop, test_start, test_stop,
+                       count=25, fname=DW_NOMINATE_FNAME):
     """
     Create labled data for a given contress.
-    @param congress_no_train: Int beginning congress number for training.
-    @param congress_no_test: Int congress number for testing.
+    @param train_start: First congress for training.
+    @param train_stop: Last congress for training.
+    @param test_start: First congress for testing.
+    @param test_stop: Last congress for testing.
     @param count: Int number of most extreme ideologies to include.
     @param fname: Int dw nominate file name.
     """
@@ -555,7 +550,7 @@ def create_labled_data(congress_no_train=109, congress_no_test=112, count=25,
     # Assemble training data.
     train = []
     train_target = []
-    for congress in range(congress_no_train,congress_no_test):
+    for congress in range(train_start,train_stop+1):
         fname = make_fname(congress,'combined')
         congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
 
@@ -589,36 +584,37 @@ def create_labled_data(congress_no_train=109, congress_no_test=112, count=25,
     # Assemble test data.
     test = []
     test_target = []
-    fname = make_fname(congress_no_test,'combined')
-    congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
+    for congress in range(test_start,test_stop+1):
 
-    conservative_scores = []
-    liberal_scores = []
-    for k,v in scores.iteritems():
-        if k[0] == congress_no_test and v[7]>0:
-            conservative_scores.append((k[1],v[7]))
-        conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
-        conservative_scores = conservative_scores[:25]
-        if k[0] == congress_no_test and v[7]<0:
-            liberal_scores.append((k[1],v[7]))
-        liberal_scores.sort(key= lambda tup: tup[1])
-        liberal_scores = liberal_scores[:25]
+        fname = make_fname(congress,'combined')
+        congress_data = pickle.loads(open(fname, 'rb').read().decode('zip'))
 
-    for i in range(count):
+        conservative_scores = []
+        liberal_scores = []
+        for k,v in scores.iteritems():
+            if k[0] == congress and v[7]>0:
+                conservative_scores.append((k[1],v[7]))
+            conservative_scores.sort(key= lambda tup: tup[1], reverse=True)
+            conservative_scores = conservative_scores[:25]
+            if k[0] == congress and v[7]<0:
+                liberal_scores.append((k[1],v[7]))
+            liberal_scores.sort(key= lambda tup: tup[1])
+            liberal_scores = liberal_scores[:25]
 
-        try:
-            name = conservative_scores[i][0]
-            test.append(congress_data[name])
-            test_target.append(1)
-        except KeyError:
-            print 'WARNING no data for: %s in congress %i' % (name, congress_no_test)
+        for i in range(count):
+            try:
+                name = conservative_scores[i][0]
+                test.append(congress_data[name])
+                test_target.append(1)
+            except KeyError:
+                print 'WARNING no data for: %s in congress %i' % (name, congress)
 
-        try:
-            name = liberal_scores[i][0]
-            test.append(congress_data[name])
-            test_target.append(0)
-        except KeyError:
-            print 'WARNING no data for: %s in congress %i' % (name, congress_no_test)
+            try:
+                name = liberal_scores[i][0]
+                test.append(congress_data[name])
+                test_target.append(0)
+            except KeyError:
+                print 'WARNING no data for: %s in congress %i' % (name, congress)
 
     # Create and save data object.
     data = {}
@@ -635,8 +631,11 @@ def create_labled_data(congress_no_train=109, congress_no_test=112, count=25,
 if __name__ == '__main__':
 
     # Parse command line arguments and options.
-    usage = 'usage: %prog [options] congress'
-    usage += '\n congress = congress number in range 104-113.'
+    usage = 'usage: %prog [options] congress [train_stop] [test_start] [test_stop]'
+    usage += '\n congress = congress number in range 104-113. Used as train_start for --make'
+    usage += '[train_stop] = Last congress used in training data for --make.'
+    usage += '[test_start] = Last congress used in testing data for --make.'
+    usage += '[test_stop] = Last congress used in testing data for --make.'
     description = 'Download and process congressional record.'
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-d','--download', action='store_true', dest='download',
@@ -651,6 +650,8 @@ if __name__ == '__main__':
                 help='Dump debugging data to console.')
     p.add_option('-e','--expressions', action='store_true', dest='expressions',
                 help='Dump stop expression data to console.')
+    p.add_option('-m','--make', action='store', dest='make_name',
+                help='Make a pickled dataset for experiments.')
 
     # Parse args, get congress number.
     (opts, args) = p.parse_args()
@@ -659,6 +660,18 @@ if __name__ == '__main__':
         sys.exit(1)
     congress_no = int(args[0])
     articles = None
+
+    # Make dataset.
+    if opts.make_name:
+        if len(args) < 4:
+            p.print_usage()
+            sys.exit(1)
+        train_start = int(args[0])
+        train_stop = int(args[1])
+        test_start = int(args[2])
+        test_stop = int(args[3])
+        create_labled_data(train_start, train_stop, test_start, test_stop)
+        sys.exit(0)
 
     # Download and save congress articles.
     if opts.download:

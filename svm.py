@@ -10,7 +10,6 @@
 
 # Import common modules and utilities.
 from common import *
-from sklearn.utils.extmath import density
 
 # Define method and models available.
 METHOD = 'SVM'
@@ -52,8 +51,6 @@ def train(data, dataset, model, **kwargs):
     df_max = kwargs.get('df_max',1.0)
     vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True,
                     min_df=df_min, max_df=df_max)
-    #vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True)
-
 
     svm_c = kwargs.get('svm_c', 1.0)
     svm_tol = kwargs.get('svm_tol', 1e-3)
@@ -139,18 +136,22 @@ def train(data, dataset, model, **kwargs):
     if hasattr(clf, 'coef_'):
         print("dimensionality: %d" % clf.coef_.shape[1])
         print("density: %f" % density(clf.coef_))
-        print str(clf.coef_.shape)
+        print("classifier shape: %s" % str(clf.coef_.shape))
         if model == 'linear' and svm_top>0:
             feature_names = np.asarray(vectorizer.get_feature_names())
             top = clf.coef_.toarray().argsort(axis=1)[0]
             top_pos = top[-svm_top:]
             top_neg = top[:svm_top]
+            print '-'*100
             print 'Top Positive Features:'
             for idx in top_pos:
                 print feature_names[idx]
+            print '-'*100
+            print '-'*100
             print 'Top Negative Features:'
             for idx in top_neg:
                 print feature_names[idx]
+            print '-'*100
     ############################################################
 
     # Create classifier and feature extractor file names.
@@ -386,7 +387,7 @@ if __name__ == '__main__':
     p.add_option('--svm_gs',action='store_true',dest='svm_gs',
                  help='Grid Search for SVM')
     p.add_option('--svm_top',action='store',dest='svm_top',type='int',
-                 help='Show top N features for SVM (linear only), default=0.')
+                 help='Show top N features for SVM (2-class linear only), default=0.')
     p.set_defaults(fappend=None, dim=None, confusion=None, overwrite=False,
                    svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
                    svm_gamma=0.0, svm_coef0=0.0,svm_gs=False,svm_top=0,
