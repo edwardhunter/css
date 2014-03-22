@@ -59,7 +59,7 @@ DW_NOMINATE_FNAME = 'dw_nominate.txt'
 BASE_URL = 'http://beta.congress.gov'
 SPEAKER_EXPR = re.compile(r' {,3}(Mr.|Ms.|Mrs.) ([A-Z][A-Za-z]+[A-Z])( of [^\.]+)?\.')
 
-# These patterns signale the end or interruption in a speech.
+# These patterns signal the end or interruption in a speech.
 STOP_PATTERNS = [
     # Observed in congress 112, 111, 110, 109
     r'\s+The (ACTING |VICE )?PRESIDENT',

@@ -321,7 +321,7 @@ def load_data(name, data_home=DATA_HOME):
         testing_total += testing_count
         print '%5i  %25s  train size: %8i, test size: %8i' % \
               (i, x, training_count, testing_count)
-    print '%5s  %25s  train_size: %8i, test size: %8i' % \
+    print '%5s  %25s  train size: %8i, test size: %8i' % \
             ('', 'Totals:', training_total, testing_total)
 
 
