@@ -4,7 +4,6 @@
 @package css
 @file css/data_utils.py
 @author Edward Hunter
-@author K Sree Harsha
 @brief Utility module for retrieving and loading training and testing
 text datasets.
 """

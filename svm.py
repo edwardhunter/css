@@ -4,7 +4,6 @@
 @package css
 @file css/svm.py
 @author Edward Hunter
-@author K Sree Harsha
 @brief Support vector machine supervised learning and evaluation methods.
 """
 

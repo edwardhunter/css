@@ -4,7 +4,6 @@
 @package css
 @file css/naive_bayes.py
 @author Edward Hunter
-@author Your Name Here
 @brief Naive Bayes supervised learning and evaluation methods.
 """
 

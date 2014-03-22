@@ -4,7 +4,6 @@
 @package css
 @file css/common.py
 @author Edward Hunter
-@author K Sree Harsha
 @brief Common imports and utility functions.
 """
 
