@@ -64,14 +64,23 @@ def train(data, dataset, model, **kwargs):
     data_train = data['train']
     data_train_target = data['train_target']
 
+    # Retrieve options.
+    dim = kwargs.get('dim', None)
+    df_min = kwargs.get('df_min',1)
+    df_max = kwargs.get('df_max',1.0)
+
+    # Create dimension reducer.
+    fselector = None
+    if dim:
+        fselector = SelectKBest(chi2, k=dim)
+
     ############################################################
     # Create feature extractor, classifier.
     ############################################################
-    df_min = kwargs.get('df_min',1)
-    df_max = kwargs.get('df_max',1.0)
     vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True,
                     min_df=df_min, max_df=df_max)
 
+    # SVM specific parameters.
     svm_c = kwargs.get('svm_c', 1.0)
     svm_tol = kwargs.get('svm_tol', 1e-3)
     svm_max_iter = kwargs.get('svm_max_iter', -1)
@@ -81,6 +90,7 @@ def train(data, dataset, model, **kwargs):
     svm_gs = kwargs.get('svm_gs',False)
     svm_top = kwargs.get('svm_top',0)
 
+    # Grid search support for SVMs.
     if svm_gs:
         # Comments contain short ranges for easy testing.
         C_range = 10.0 ** np.arange(-1, 3)
@@ -120,58 +130,52 @@ def train(data, dataset, model, **kwargs):
     	elif model == 'rbf':
         	clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol,
                       max_iter=svm_max_iter, gamma=svm_gamma)
+    if fselector:
+        fselector.__normalize = True
     ############################################################
 
-    ############################################################
-    # If specified, create feature dimension reducer.
-    ############################################################
-    dim = kwargs.get('dim', None)
-    if dim:
-        fselector = SelectKBest(chi2, k=dim)
-    ############################################################
-
-    ############################################################
     # Extract features, reducing dimension if specified.
-    ############################################################
     print 'Extracting text features...'
     start = time.time()
     x_train = vectorizer.fit_transform(data_train)
-    if dim:
+    if fselector:
         x_train = fselector.fit_transform(x_train, data_train_target)
+        if fselector.__normalize:
+            x_train = normalize(x_train)
     print 'Extracted in %f seconds.' % (time.time() - start)
-    ############################################################
+    print 'Feature dimension: %i' %x_train.shape[1]
+    print 'Feature density: %f' % density(x_train)
 
-    ############################################################
     # Train classifier.
-    ############################################################
     print 'Training classifier...'
     start = time.time()
     clf.fit(x_train, data_train_target)
     print 'Trained in %f seconds.' % (time.time() - start)
+
+    ############################################################
+    # Grid search and top feature output for SVMs.
+    ############################################################
     if svm_gs:
         print 'Best score: ' + str(clf.best_score_)
         print 'Optimal parameters: '
         for k,v in clf.best_params_.iteritems():
             print '%s=%s' % (k, str(v))
+
     if hasattr(clf, 'coef_'):
-        print("dimensionality: %d" % clf.coef_.shape[1])
-        print("density: %f" % density(clf.coef_))
-        print("classifier shape: %s" % str(clf.coef_.shape))
-        if model == 'linear' and svm_top>0:
+        print("Classifier shape: %s" % str(clf.coef_.shape))
+        if model == 'linear' and svm_top>0 and len(data['target_names'])==2:
             feature_names = np.asarray(vectorizer.get_feature_names())
             top = clf.coef_.toarray().argsort(axis=1)[0]
             top_pos = top[-svm_top:]
             top_neg = top[:svm_top]
-            print '-'*100
-            print 'Top Positive Features:'
+            print '-'*40
+            print 'Top %s Features:' % data['target_names'][1]
             for idx in top_pos:
                 print feature_names[idx]
-            print '-'*100
-            print '-'*100
-            print 'Top Negative Features:'
+            print '-'*40
+            print 'Top %s Features:' % data['target_names'][0]
             for idx in top_neg:
                 print feature_names[idx]
-            print '-'*100
     ############################################################
 
     # Create classifier and feature extractor file names.
@@ -198,7 +202,6 @@ def train(data, dataset, model, **kwargs):
     print 'Feature extractor written to file %s' % (vpname)
 
     # Write out dimension reducer.
-    dim = kwargs.get('dim', None)
     if dim:
         dpname = os.path.join(MODEL_HOME,dfname)
         fhandle = open(dpname,'w')
@@ -253,14 +256,13 @@ def predict(input_data, cfname, vfname, **kwargs):
         fhandle.close()
         print 'Feature selector read from file %s' % (dpname)
 
-    ############################################################
     # Compute features and predict.
-    ############################################################
     x_test = vectorizer.transform(input_data)
     if dfname:
         x_test = fselector.transform(x_test)
+        if fselector.__normalize:
+            x_test = normalize(x_test)
     pred = clf.predict(x_test)
-    ############################################################
 
     # Return vector of predicted labels.
     return pred
@@ -303,13 +305,10 @@ def eval(data, dataset, model, **kwargs):
     # Predict test data.
     pred = predict(data_test, cfname, vfname, dfname=dfname)
 
-    ############################################################
     # Evaluate predictions: metrics.
-    ############################################################
     class_report = metrics.classification_report(data_test_target, pred,
                                                  target_names=data_target_names)
     conf_matrix = metrics.confusion_matrix(data_test_target ,pred)
-    ############################################################
 
     # Print evaluations.
     report = 'Report File: %s\n' % reportname
@@ -391,7 +390,9 @@ if __name__ == '__main__':
     p.add_option('--df_max', action='store', type='float', dest='df_max',
                  help='Maximum document frequency proportion (default=1.0).')
 
-    # SVM options.
+    ############################################################
+    # Add method specific options.
+    ############################################################
     p.add_option('--svm_c', action='store', dest='svm_c', type='float',
                  help='SVM penalty term, default=1.0.')
     p.add_option('--svm_tol', action='store', dest='svm_tol', type='float',
@@ -412,6 +413,7 @@ if __name__ == '__main__':
                    svm_c=1.0, svm_tol=1e-3, svm_max_iter=-1, svm_degree=3,
                    svm_gamma=0.0, svm_coef0=0.0,svm_gs=False,svm_top=0,
                    df_min=1.0, df_max=1.0)
+    ############################################################
 
     (opts, args) = p.parse_args()
     if len(args) < 2:
@@ -429,7 +431,9 @@ if __name__ == '__main__':
     if df_min == 1.0: df_min = 1
     df_max = opts.df_max
 
-    # Get svm options.
+    ############################################################
+    # Extract method specific options.
+    ############################################################
     svm_kwargs = {}
     svm_kwargs['svm_c'] = opts.svm_c
     svm_kwargs['svm_tol'] = opts.svm_tol
@@ -439,6 +443,7 @@ if __name__ == '__main__':
     svm_kwargs['svm_coef0'] = opts.svm_coef0
     svm_kwargs['svm_gs']=opts.svm_gs
     svm_kwargs['svm_top']=opts.svm_top
+    ############################################################
 
     # Load data.
     data = load_data(dataset)

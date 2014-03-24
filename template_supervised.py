@@ -60,28 +60,44 @@ def train(data, dataset, model, **kwargs):
     data_train = data['train']
     data_train_target = data['train_target']
 
+    # Retrieve options.
+    dim = kwargs.get('dim', None)
+    df_min = kwargs.get('df_min',1)
+    df_max = kwargs.get('df_max',1.0)
+
+    # Create dimension reducer.
+    fselector = None
+    if dim:
+        fselector = SelectKBest(chi2, k=dim)
+
     ############################################################
     # Create feature extractor, classifier.
     ############################################################
     # TODO: create clf, vectorizer.
     ############################################################
 
-    ############################################################
-    # If specified, create feature dimension reducer.
-    ############################################################
-    # TODO: create fselector.
-    ############################################################
-
-    ############################################################
     # Extract features, reducing dimension if specified.
-    ############################################################
-    # TODO
-    ############################################################
+    print 'Extracting text features...'
+    start = time.time()
+    x_train = vectorizer.fit_transform(data_train)
+    if fselector:
+        x_train = fselector.fit_transform(x_train, data_train_target)
+        if fselector.__normalize:
+            x_train = normalize(x_train)
+    print 'Extracted in %f seconds.' % (time.time() - start)
+    print 'Feature dimension: %i' %x_train.shape[1]
+    print 'Feature density: %f' % density(x_train)
+
+    # Train classifier.
+    print 'Training classifier...'
+    start = time.time()
+    clf.fit(x_train, data_train_target)
+    print 'Trained in %f seconds.' % (time.time() - start)
 
     ############################################################
-    # Train classifier.
+    # Grid search and top feature output for SVMs.
     ############################################################
-    # TODO
+    # TODO: SVMs only.
     ############################################################
 
     # Create classifier and feature extractor file names.
@@ -108,7 +124,6 @@ def train(data, dataset, model, **kwargs):
     print 'Feature extractor written to file %s' % (vpname)
 
     # Write out dimension reducer.
-    dim = kwargs.get('dim', None)
     if dim:
         dpname = os.path.join(MODEL_HOME,dfname)
         fhandle = open(dpname,'w')
@@ -163,11 +178,13 @@ def predict(input_data, cfname, vfname, **kwargs):
         fhandle.close()
         print 'Feature selector read from file %s' % (dpname)
 
-    ############################################################
     # Compute features and predict.
-    ############################################################
-    # TODO: create variable pred.
-    ############################################################
+    x_test = vectorizer.transform(input_data)
+    if dfname:
+        x_test = fselector.transform(x_test)
+        if fselector.__normalize:
+            x_test = normalize(x_test)
+    pred = clf.predict(x_test)
 
     # Return vector of predicted labels.
     return pred
@@ -210,12 +227,10 @@ def eval(data, dataset, model, **kwargs):
     # Predict test data.
     pred = predict(data_test, cfname, vfname, dfname=dfname)
 
-    ############################################################
     # Evaluate predictions: metrics.
-    ############################################################
-    # TODO: create values for f1, precision, recall, conf_matrix
-    # TODO: Create variables class_report, conf_matrix.
-    ############################################################
+    class_report = metrics.classification_report(data_test_target, pred,
+                                                 target_names=data_target_names)
+    conf_matrix = metrics.confusion_matrix(data_test_target ,pred)
 
     # Print evaluations.
     report = 'Report File: %s\n' % reportname
@@ -288,10 +303,14 @@ if __name__ == '__main__':
                  help='File name appendix string.')
     p.add_option('-d','--dim', action='store', dest='dim', type='int',
                  help='Reduced feature dimension integer.')
-    p.add_option('-c', '--confusion', action='store',
-                 dest='confusion', help='Save confusion image. Options: linear, log')
-    p.add_option('-o', '--overwrite', action='store_true',
-                 dest='overwrite', help='Overwrite existing files.')
+    p.add_option('-c', '--confusion', action='store', dest='confusion',
+                 help='Save confusion image. Options: linear, log')
+    p.add_option('-o', '--overwrite', action='store_true', dest='overwrite',
+                 help='Overwrite existing files.')
+    p.add_option('--df_min', action='store',type='float', dest='df_min',
+                 help='Minimum document frequency proportion (default=None).')
+    p.add_option('--df_max', action='store', type='float', dest='df_max',
+                 help='Maximum document frequency proportion (default=1.0).')
     p.set_defaults(fappend=None, dim=None, confusion=None, overwrite=False)
 
     ############################################################
@@ -313,6 +332,9 @@ if __name__ == '__main__':
     dim = opts.dim
     confusion = opts.confusion
     overwrite = opts.overwrite
+    df_min = opts.df_min
+    if df_min == 1.0: df_min = 1
+    df_max = opts.df_max
 
     ############################################################
     # Extract method specific options.
@@ -338,7 +360,8 @@ if __name__ == '__main__':
     else:
         dim_files_present = True
     if overwrite or not model_files_present or not dim_files_present:
-        train(data, dataset, model, dim=dim, fappend=fappend)
+        train(data, dataset, model, dim=dim, fappend=fappend,
+              df_min=df_min, df_max=df_max)
 
     # Evaluate classifier.
     eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)
