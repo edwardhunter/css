@@ -34,11 +34,10 @@ from common import *
 # Define method and models available.
 METHOD = 'SVM'
 MODELS = ('linear','poly','rbf')
-GS_FAPPEND = ''
 
 # Good results using default linear kernel and
-# rbf with svm_c=8 and svm_gamma=0.5.
-# Grid search would be valuable in this lab.
+# rbf with svm_c=10 and svm_gamma=1.0.
+
 
 def train(data, dataset, model, **kwargs):
     """
@@ -92,13 +91,10 @@ def train(data, dataset, model, **kwargs):
 
     # Grid search support for SVMs.
     if svm_gs:
-        # Comments contain short ranges for easy testing.
         C_range = 10.0 ** np.arange(-1, 3)
-        #C_range = [1.0,10.0]
-        degree_range = [2, 3]
+        degree_range = [2, 3, 4, 5]
         coef0_range = [0, 1, 10]
-        gamma_range = 10.0 ** np.arange(-2, 2)
-        #gamma_range = [0.1, 1.0]
+        gamma_range = 10.0 ** np.arange(-2, 3)
         param_grid = dict(
             kernel=[model],
             tol=[svm_tol],
@@ -108,7 +104,7 @@ def train(data, dataset, model, **kwargs):
         if model == 'linear':
             pass
 
-        elif model == 'ploy':
+        elif model == 'poly':
             param_grid['degree']=degree_range
             param_grid['coef0']=coef0_range
             param_grid['gamma']=gamma_range
@@ -125,8 +121,8 @@ def train(data, dataset, model, **kwargs):
                       max_iter=svm_max_iter)
     	elif model == 'poly':
         	clf = SVC(kernel='poly', C=svm_c, tol=svm_tol,
-                      max_iter=svm_max_iter,
-            degree=svm_degree, gamma=svm_gamma, coef0=svm_coef0)
+                      max_iter=svm_max_iter, degree=svm_degree,
+                      gamma=svm_gamma, coef0=svm_coef0)
     	elif model == 'rbf':
         	clf = SVC(kernel='rbf', C=svm_c, tol=svm_tol,
                       max_iter=svm_max_iter, gamma=svm_gamma)
@@ -152,31 +148,40 @@ def train(data, dataset, model, **kwargs):
     clf.fit(x_train, data_train_target)
     print 'Trained in %f seconds.' % (time.time() - start)
 
+    # Default grid search and top features output triggers.
+    grid_search_output = False
+    top_features_output = False
+
     ############################################################
     # Grid search and top feature output for SVMs.
     ############################################################
-    if svm_gs:
+    grid_search_output = opts.svm_gs
+    top_features_output = model == 'linear' and svm_top>0 \
+        and len(data['target_names'])==2
+    ############################################################
+
+    # Print out grid search results.
+    if grid_search_output:
         print 'Best score: ' + str(clf.best_score_)
         print 'Optimal parameters: '
         for k,v in clf.best_params_.iteritems():
             print '%s=%s' % (k, str(v))
 
-    if hasattr(clf, 'coef_'):
+    # Print out top features results.
+    if top_features_output:
         print("Classifier shape: %s" % str(clf.coef_.shape))
-        if model == 'linear' and svm_top>0 and len(data['target_names'])==2:
-            feature_names = np.asarray(vectorizer.get_feature_names())
-            top = clf.coef_.toarray().argsort(axis=1)[0]
-            top_pos = top[-svm_top:]
-            top_neg = top[:svm_top]
-            print '-'*40
-            print 'Top %s Features:' % data['target_names'][1]
-            for idx in top_pos:
-                print feature_names[idx]
-            print '-'*40
-            print 'Top %s Features:' % data['target_names'][0]
-            for idx in top_neg:
-                print feature_names[idx]
-    ############################################################
+        feature_names = np.asarray(vectorizer.get_feature_names())
+        top = clf.coef_.toarray().argsort(axis=1)[0]
+        top_pos = top[-svm_top:]
+        top_neg = top[:svm_top]
+        print '-'*40
+        print 'Top %s Features:' % data['target_names'][1]
+        for idx in top_pos:
+            print feature_names[idx]
+        print '-'*40
+        print 'Top %s Features:' % data['target_names'][0]
+        for idx in top_neg:
+            print feature_names[idx]
 
     # Create classifier and feature extractor file names.
     fappend = kwargs.get('fappend', None)
@@ -430,19 +435,19 @@ if __name__ == '__main__':
     df_min = opts.df_min
     if df_min == 1.0: df_min = 1
     df_max = opts.df_max
+    method_kwargs = {}
 
     ############################################################
     # Extract method specific options.
     ############################################################
-    svm_kwargs = {}
-    svm_kwargs['svm_c'] = opts.svm_c
-    svm_kwargs['svm_tol'] = opts.svm_tol
-    svm_kwargs['svm_max_iter'] = opts.svm_max_iter
-    svm_kwargs['svm_degree'] = opts.svm_degree
-    svm_kwargs['svm_gamma'] = opts.svm_gamma
-    svm_kwargs['svm_coef0'] = opts.svm_coef0
-    svm_kwargs['svm_gs']=opts.svm_gs
-    svm_kwargs['svm_top']=opts.svm_top
+    method_kwargs['svm_c'] = opts.svm_c
+    method_kwargs['svm_tol'] = opts.svm_tol
+    method_kwargs['svm_max_iter'] = opts.svm_max_iter
+    method_kwargs['svm_degree'] = opts.svm_degree
+    method_kwargs['svm_gamma'] = opts.svm_gamma
+    method_kwargs['svm_coef0'] = opts.svm_coef0
+    method_kwargs['svm_gs']=opts.svm_gs
+    method_kwargs['svm_top']=opts.svm_top
     ############################################################
 
     # Load data.
@@ -464,7 +469,7 @@ if __name__ == '__main__':
         dim_files_present = True
     if overwrite or not model_files_present or not dim_files_present:
         train(data, dataset, model, dim=dim, fappend=fappend,
-              df_min=df_min, df_max=df_max, **svm_kwargs)
+              df_min=df_min, df_max=df_max, **method_kwargs)
 
     # Evaluate classifier.
     eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)

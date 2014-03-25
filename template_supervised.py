@@ -94,11 +94,38 @@ def train(data, dataset, model, **kwargs):
     clf.fit(x_train, data_train_target)
     print 'Trained in %f seconds.' % (time.time() - start)
 
+    # Default grid search and top features output triggers.
+    grid_search_output = False
+    top_features_output = False
+
     ############################################################
     # Grid search and top feature output for SVMs.
     ############################################################
     # TODO: SVMs only.
     ############################################################
+
+    # Print out grid search results.
+    if grid_search_output:
+        print 'Best score: ' + str(clf.best_score_)
+        print 'Optimal parameters: '
+        for k,v in clf.best_params_.iteritems():
+            print '%s=%s' % (k, str(v))
+
+    # Print out top features results.
+    if top_features_output:
+        print("Classifier shape: %s" % str(clf.coef_.shape))
+        feature_names = np.asarray(vectorizer.get_feature_names())
+        top = clf.coef_.toarray().argsort(axis=1)[0]
+        top_pos = top[-svm_top:]
+        top_neg = top[:svm_top]
+        print '-'*40
+        print 'Top %s Features:' % data['target_names'][1]
+        for idx in top_pos:
+            print feature_names[idx]
+        print '-'*40
+        print 'Top %s Features:' % data['target_names'][0]
+        for idx in top_neg:
+            print feature_names[idx]
 
     # Create classifier and feature extractor file names.
     fappend = kwargs.get('fappend', None)
@@ -334,6 +361,7 @@ if __name__ == '__main__':
     df_min = opts.df_min
     if df_min == 1.0: df_min = 1
     df_max = opts.df_max
+    method_kwargs = {}
 
     ############################################################
     # Extract method specific options.
@@ -360,7 +388,8 @@ if __name__ == '__main__':
         dim_files_present = True
     if overwrite or not model_files_present or not dim_files_present:
         train(data, dataset, model, dim=dim, fappend=fappend,
-              df_min=df_min, df_max=df_max)
+              df_min=df_min, df_max=df_max, **method_kwargs)
+
 
     # Evaluate classifier.
     eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)
