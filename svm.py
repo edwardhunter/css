@@ -115,6 +115,7 @@ def train(data, dataset, model, **kwargs):
         svr = SVC()
         clf = GridSearchCV(svr, param_grid=param_grid, n_jobs=-1, verbose=5)
 
+    # Specified parameter SVMs.
     else:
     	if model == 'linear':
         	clf = SVC(kernel='linear', C=svm_c, tol=svm_tol,
