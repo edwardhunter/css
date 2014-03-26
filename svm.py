@@ -392,7 +392,7 @@ if __name__ == '__main__':
     p.add_option('-o', '--overwrite', action='store_true', dest='overwrite',
                  help='Overwrite existing files.')
     p.add_option('--df_min', action='store',type='float', dest='df_min',
-                 help='Minimum document frequency proportion (default=None).')
+                 help='Minimum frequency (int) or proportion (float) (default=1).')
     p.add_option('--df_max', action='store', type='float', dest='df_max',
                  help='Maximum document frequency proportion (default=1.0).')
 
@@ -433,8 +433,10 @@ if __name__ == '__main__':
     dim = opts.dim
     confusion = opts.confusion
     overwrite = opts.overwrite
-    df_min = opts.df_min
-    if df_min == 1.0: df_min = 1
+    if opts.df_min == int(opts.df_min):
+        df_min = int(opts.df_min)
+    else:
+        df_min = opts.df_min
     df_max = opts.df_max
     method_kwargs = {}
 
