@@ -89,7 +89,7 @@ def train(data, dataset, model, no_components, no_runs, **kwargs):
     ############################################################
     # Learn model.
     ############################################################
-    print 'Learning unsupervised model...'
+    print 'Learning %s model %s, %i runs...' % (METHOD, model, no_runs)
     for i in range(no_runs):
         starttime = time.time()
         model_i, labels_i, scores_i, sizes_i = spkmeans(x, no_components)
