@@ -73,15 +73,33 @@ def train(data, dataset, no_components, no_runs, **kwargs):
     print 'Extracting text features...'
     start = time.time()
     x = vectorizer.fit_transform(_data)
-
     print 'Extracted in %f seconds.' % (time.time() - start)
     print 'Feature dimension: %i' %x.shape[1]
     print 'Feature density: %f' % density(x)
 
-    ############################################################
-    # Learn model.
-    ############################################################
-    # TODO: Loop learning algorithm and collect results.
+    # Define model output container.
+    results =dict(
+        models=[],
+        labels=[],
+        scores=[],
+        sizes=[]
+    )
+
+    # Loop model.
+    print 'Learning unsupervised model...'
+    for i in range(no_runs):
+        starttime = time.time()
+        ############################################################
+        # Run algorithm.
+        ############################################################
+        # TODO: Call unsupervised algorithm.
+        ############################################################
+        results['models'].append(model_i)
+        results['labels'].append(labels_i)
+        results['scores'].append(scores_i)
+        results['sizes'].append(sizes_i)
+
+        print 'Run %i/%i in %f seconds.' % (i, no_runs, time.time() - starttime)
     ############################################################
 
     # Create object file names.
@@ -133,7 +151,7 @@ def eval(dataset, model, no_components, **kwargs):
     fhandle = open(mdl_path)
     results = pickle.load(fhandle)
     fhandle.close()
-    print 'Read results from file: %s' % mdl_path
+    print 'Read model from file: %s' % mdl_path
 
     # Read in the feature extractor.
     fhandle = open(vec_path)

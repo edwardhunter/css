@@ -150,7 +150,7 @@ def eval(dataset, model, no_components, **kwargs):
     fhandle = open(mdl_path)
     results = pickle.load(fhandle)
     fhandle.close()
-    print 'Read results from file: %s' % mdl_path
+    print 'Read model from file: %s' % mdl_path
 
     # Read in the feature extractor.
     fhandle = open(vec_path)
