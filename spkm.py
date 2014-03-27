@@ -2,9 +2,9 @@
 
 """
 @package css
-@file css/template_unsupervised.py
+@file css/spkm.py
 @author Edward Hunter
-@brief A template to be customized for unsupervised learning experiments.
+@brief Spherical k-means unsupervised learning for document clustering.
 """
 
 # Copyright and licence.
@@ -183,4 +183,4 @@ if __name__ == '__main__':
         train(data, dataset, no_components, no_runs, **kwargs)
 
     # Evaluate model.
-    eval(data, dataset, **kwargs)
+    eval(dataset, no_components, **kwargs)
