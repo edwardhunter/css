@@ -64,6 +64,8 @@ from sklearn.datasets.twenty_newsgroups import download_20newsgroups
 from sklearn.grid_search import GridSearchCV
 from sklearn.utils.extmath import density
 
+# Spherical k means support.
+from spkm import spkmeans
 
 # Import matplotlib for plotting graphics.
 import matplotlib.pyplot as plt
@@ -118,6 +120,7 @@ def make_fname(method, model, dataset, suffix, ext=None, *args):
     """
 
     fname = '%s_%s_%s' % (method, model, dataset)
+    args = [x for x in args if x]
     for x in args:
         fname += '_' + x
 

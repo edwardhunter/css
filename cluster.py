@@ -2,9 +2,9 @@
 
 """
 @package css
-@file css/template_unsupervised.py
+@file css/cluster.py
 @author Edward Hunter
-@brief A template to be customized for unsupervised learning experiments.
+@brief Unsupervised document clustering.
 """
 
 # Copyright and licence.
@@ -32,11 +32,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from common import *
 
 # Define method and models available.
-METHOD = ''
-MODELS = ()
+METHOD = 'CLUST'
+MODELS = ('spkm')
 
 
-def train(data, dataset, no_components, no_runs, **kwargs):
+def train(data, dataset, model, no_components, no_runs, **kwargs):
     """
     Train and store feature extractor, dimension reducer and unsupervised
     model.
@@ -64,24 +64,41 @@ def train(data, dataset, no_components, no_runs, **kwargs):
     df_max = kwargs.get('df_max',1.0)
 
     ############################################################
-    # Create feature extractor, learner.
+    # Create feature extractor.
     ############################################################
-    # TODO: create vectorizer, unsupervised learner.
+    vectorizer = TfidfVectorizer(stop_words='english',sublinear_tf=True,
+                min_df=df_min, max_df=df_max)
     ############################################################
 
     # Extract features, reducing dimension if specified.
     print 'Extracting text features...'
     start = time.time()
     x = vectorizer.fit_transform(_data)
-
     print 'Extracted in %f seconds.' % (time.time() - start)
     print 'Feature dimension: %i' %x.shape[1]
     print 'Feature density: %f' % density(x)
 
+    # Define model output container.
+    results =dict(
+        models=[],
+        labels=[],
+        scores=[],
+        sizes=[]
+    )
+
     ############################################################
     # Learn model.
     ############################################################
-    # TODO: Loop learning algorithm and collect results.
+    print 'Learning unsupervised model...'
+    for i in range(no_runs):
+        starttime = time.time()
+        model_i, labels_i, scores_i, sizes_i = spkmeans(x, no_components)
+        results['models'].append(model_i)
+        results['labels'].append(labels_i)
+        results['scores'].append(scores_i)
+        results['sizes'].append(sizes_i)
+
+        print 'Run %i/%i in %f seconds.' % (i, no_runs, time.time() - starttime)
     ############################################################
 
     # Create object file names.
@@ -98,7 +115,7 @@ def train(data, dataset, no_components, no_runs, **kwargs):
 
     # Write out model.
     fhandle = open(mdl_path,'w')
-    pickle.dump(model, fhandle)
+    pickle.dump(results, fhandle)
     fhandle.close()
     print 'Model written to file %s' % (mdl_path)
 
@@ -154,10 +171,11 @@ if __name__ == '__main__':
     from data_utils import load_unsupervised_data, DATASETS
 
     # Parse command line arguments and options.
-    usage = 'usage: %prog [options] no_components no_runs dataset'
+    usage = 'usage: %prog [options] model dataset no_components no_runs'
+    usage += '\n\tmodel = %s.' % str(MODELS)
+    usage += '\n\tdataset = %s.' % str(DATASETS)
     usage += '\n\tno_components = int number of model components.'
     usage += '\n\tno_runs = int number of model runs.'
-    usage += '\n\tdataset = %s.' % str(DATASETS)
     description = 'Train and evaluate supervised classifiers.'
     p = optparse.OptionParser(usage=usage, description=description)
     p.add_option('-f','--fappend', action='store', dest='fappend',
@@ -177,8 +195,8 @@ if __name__ == '__main__':
 
     model = args[0]
     dataset = args[1]
-    no_components = args[2]
-    no_runs = args[3]
+    no_components = int(args[2])
+    no_runs = int(args[3])
 
     fappend = opts.fappend
     overwrite = opts.overwrite
@@ -214,4 +232,4 @@ if __name__ == '__main__':
         train(data, dataset, model, no_components, no_runs, **kwargs)
 
     # Evaluate model.
-    eval(dataset, model, **kwargs)
+    eval(dataset, model, no_components, **kwargs)
