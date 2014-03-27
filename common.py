@@ -78,13 +78,14 @@ REPORT_HOME =  os.path.join('.', 'reports')
 
 def get_fnames(method, model, dataset, dim=None, appendix=None):
     """
-    Return the file names of the stored classifier and feature extractor.
+    Return the file names of the stored classifier, feature extractor,
+    dimesnion reducer, confusion image and report.
     @param: method the learning method, usually the module file name.
     @param: model the learning model.
     @param: dataset the dataset used.
     @param: dim the reduce dimension to specified integer.
     @param: appendix the optional appendix to the classifier and features extractor file names.
-    @return: triple containing classifier, extractor and figure filenames.
+    @return: 5-tuple containing file names.
     """
 
     base_name = '%s_%s_%s' % (method, model, dataset)
@@ -104,3 +105,24 @@ def get_fnames(method, model, dataset, dim=None, appendix=None):
         dfname = None
 
     return (cfname, vfname, dfname, figfname, reportfname)
+
+def make_fname(method, model, dataset, suffix, ext=None, *args):
+    """
+    Return filename for objects to be stored.
+    @param method: the learning method, usually the module file name.
+    @param model: the learning model.
+    @param dataset: the dataset used.
+    @param suffix: the type of object.
+    @param ext: the filename extension.
+    @return fname: the filename.
+    """
+
+    fname = '%s_%s_%s' % (method, model, dataset)
+    for x in args:
+        fname += '_' + x
+
+    fname += '_' + suffix
+    if ext:
+        fname += '.' + ext
+    return fname
+

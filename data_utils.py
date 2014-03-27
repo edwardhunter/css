@@ -310,8 +310,6 @@ def get_cat_data(name, data_home=DATA_HOME):
         cat_data['train'][x] = []
         cat_data['test'][x] = []
     for i, x in enumerate(data['train_target']):
-        #print '-'*100
-        #print data['train'][i]
         cat_data['train'][data['target_names'][x]].append(data['train'][i])
     for i, x in enumerate(data['test_target']):
         cat_data['test'][data['target_names'][x]].append(data['test'][i])
@@ -323,6 +321,7 @@ def load_data(name, data_home=DATA_HOME):
     Load a data pickle into memory for processing.
     @param name: Name of the pickle less the .pkz extension.
     @param data_home: Directory to find the pickle. Default is ./data.
+    @retrun data: The supervised data dictionary.
     """
     file_path = os.path.join(data_home, name + '.pkz')
     print 'Loading: ' + file_path
@@ -343,8 +342,28 @@ def load_data(name, data_home=DATA_HOME):
     print '%5s  %25s  train size: %8i, test size: %8i' % \
             ('', 'Totals:', training_total, testing_total)
 
-
     return data
+
+
+def load_unsupervised_data(name, data_home=DATA_HOME):
+    """
+    Load a data pickle into memory and collapse training and testing
+    into one dataset.
+    @param name: Name of the pickle less the .pkz extension.
+    @param data_home: Directory to find the pickle. Default is ./data.
+    @return data: The unsupervised data dictionary.
+    """
+    data = load_data(name, data_home)
+    _data = data['train']
+    _data.extend(data['test'])
+    _target = data['train_target']
+    _target.extend(data['test_target'])
+    combined_data = dict(
+        data=_data,
+        target=_target,
+        target_names=data['target_names']
+    )
+    return combined_data
 
 
 # If run as a script, destroy and recreate all data pickles.
