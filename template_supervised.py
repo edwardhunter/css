@@ -39,18 +39,16 @@ MODELS = ()
 def train(data, dataset, model, **kwargs):
     """
     Train and store feature extractor, dimension reducer and classifier.
-    @param: data training and testing dataset dictionary.
-    @param: dataset dataset name string, valid key to data.
-    @param: model model name string.
-    @param: fappend optional file name appendix string.
-    @param: dim optional dimension integer for reduction.
+    @param data: training and testing dataset dictionary.
+    @param dataset: dataset name string, valid key to data.
+    @param model: model name string.
     """
 
     # Verify input parameters.
     if not isinstance(data, dict):
         raise ValueError('Invalid data dictionary.')
 
-    if not isinstance(dataset, str):
+    if not isinstance(dataset, str) or dataset not in DATASETS:
         raise ValueError('Invalid dataset.')
 
     if not isinstance(model,str) or model not in MODELS:
@@ -127,87 +125,98 @@ def train(data, dataset, model, **kwargs):
         for idx in top_neg:
             print feature_names[idx]
 
-    # Create classifier and feature extractor file names.
-    fappend = kwargs.get('fappend', None)
-    dim = kwargs.get('dim', None)
-    (cfname, vfname, dfname, _, _) = \
-        get_fnames(METHOD, model, dataset, dim, fappend)
+    # Create object file names.
+    fname_args = []
+    if dim:
+        fname_args.append(str(dim))
+    fname_args.append(kwargs.get('fappend', ''))
+    mdl_fname = make_fname(METHOD, model, dataset, 'mdl', 'pk', *fname_args)
+    vec_fname = make_fname(METHOD, model, dataset, 'vec', 'pk', *fname_args)
+    dim_fname = make_fname(METHOD, model, dataset, 'dim', 'pk', *fname_args)
+    mdl_path = os.path.join(MODEL_HOME,mdl_fname)
+    vec_path = os.path.join(MODEL_HOME,vec_fname)
+    dim_path = os.path.join(MODEL_HOME,dim_fname)
 
     if not os.path.exists(MODEL_HOME):
         os.makedirs(MODEL_HOME)
 
-    # Write out classifier.
-    cpname = os.path.join(MODEL_HOME,cfname)
-    fhandle = open(cpname,'w')
+    # Write out model.
+    fhandle = open(mdl_path,'w')
     pickle.dump(clf, fhandle)
     fhandle.close()
-    print 'Classifier written to file %s' % (cpname)
+    print 'Model written to file %s' % (mdl_path)
 
     # Write out feature extractor.
-    vpname = os.path.join(MODEL_HOME,vfname)
-    fhandle = open(vpname,'w')
+    fhandle = open(vec_path,'w')
     pickle.dump(vectorizer, fhandle)
     fhandle.close()
-    print 'Feature extractor written to file %s' % (vpname)
+    print 'Feature extractor written to file %s' % (vec_path)
 
     # Write out dimension reducer.
     if dim:
-        dpname = os.path.join(MODEL_HOME,dfname)
-        fhandle = open(dpname,'w')
+        fhandle = open(dim_path,'w')
         pickle.dump(fselector, fhandle)
         fhandle.close()
-        print 'Feature selector written to file %s' % (dpname)
+        print 'Dimension reducer written to file %s' % (dim_path)
 
 
-def predict(input_data, cfname, vfname, **kwargs):
+def predict(input_data, dataset, model, **kwargs):
     """
     Predict data categories from trained classifier.
-    @param: input_data vector of input data to classify.
-    @param: cfname classifier filename.
-    @param: vfname feature extractor filename.
-    @param: dfname optional feature selector filename.
-    @return: prediction vector for input_data.
+    @param input_data: vector of input data to classify.
+    @param dataset: dataset name string, valid key to data.
+    @param model: model name string.
+    @return pred: prediction vector for input_data.
     """
+
     # Verify input parameters.
     if not isinstance(input_data, list):
         raise ValueError('Invalid input data.')
 
-    if not isinstance(cfname, str):
-        raise ValueError('Invalid classifier file name.')
+    if not isinstance(dataset, str) or dataset not in DATASETS:
+        raise ValueError('Invalid dataset name.')
 
-    if not isinstance(vfname, str):
-        raise ValueError('Invalid feature extractor file name.')
+    if not isinstance(model,str) or model not in MODELS:
+        raise ValueError('Invalid model name.')
 
-    dfname = kwargs.get('dfname',None)
-    if dfname and not isinstance(dfname, str):
-        raise ValueError('Invalid dimension reducer file name.')
+    # Retrieve options.
+    dim = kwargs.get('dim', None)
+    fappend = kwargs.get('fappend', '')
+
+    # Create object file names.
+    fname_args = []
+    if dim:
+        fname_args.append(str(dim))
+    fname_args.append(fappend)
+    mdl_fname = make_fname(METHOD, model, dataset, 'mdl', 'pk', *fname_args)
+    vec_fname = make_fname(METHOD, model, dataset, 'vec', 'pk', *fname_args)
+    dim_fname = make_fname(METHOD, model, dataset, 'dim', 'pk', *fname_args)
+    mdl_path = os.path.join(MODEL_HOME,mdl_fname)
+    vec_path = os.path.join(MODEL_HOME,vec_fname)
+    dim_path = os.path.join(MODEL_HOME,dim_fname)
 
     # Read in the classifer.
-    cpname = os.path.join(MODEL_HOME,cfname)
-    fhandle = open(cpname)
+    fhandle = open(mdl_path)
     clf = pickle.load(fhandle)
     fhandle.close()
-    print 'Read classifer from file: %s' % cpname
+    print 'Read classifer from file: %s' % mdl_path
 
     # Read in the feature extractor.
-    vpname = os.path.join(MODEL_HOME,vfname)
-    fhandle = open(vpname)
+    fhandle = open(vec_path)
     vectorizer = pickle.load(fhandle)
     fhandle.close()
-    print 'Read feature extractor from file: %s' % vpname
+    print 'Read feature extractor from file: %s' % vec_path
 
     # If requested, load the dimension reducer.
-    dfname = kwargs.get('dfname', None)
-    if dfname:
-        dpname = os.path.join(MODEL_HOME,dfname)
-        fhandle = open(dpname, 'r')
+    if dim:
+        fhandle = open(dim_path, 'r')
         fselector = pickle.load(fhandle)
         fhandle.close()
-        print 'Feature selector read from file %s' % (dpname)
+        print 'Read dimesion reducer from file %s' % (dim_path)
 
     # Compute features and predict.
     x_test = vectorizer.transform(input_data)
-    if dfname:
+    if dim:
         x_test = fselector.transform(x_test)
         if fselector.__normalize:
             x_test = normalize(x_test)
@@ -223,41 +232,42 @@ def eval(data, dataset, model, **kwargs):
     Prints out F1, precision, recall and confusion.
     Saves a png image of the confusion matrix.
     @param: data training and testing dataset dictionary.
-    @param: dataset dataset name string, valid key to data.
-    @param: model model name string.
-    @param: fappend optional file name appendix string.
-    @param: dim optional dimension integer for reduction.
-    @param: confusion optional confusion image save boolean.
+    @param dataset: dataset name string, valid key to data.
+    @param model: model name string.
     """
 
     # Verify input parameters.
     if not isinstance(data, dict):
         raise ValueError('Invalid data dictionary.')
 
-    if not isinstance(dataset, str):
+    if not isinstance(dataset, str) or dataset not in DATASETS:
         raise ValueError('Invalid dataset name.')
 
     if not isinstance(model,str) or model not in MODELS:
-        raise ValueError('Invalid model type parameter.')
+        raise ValueError('Invalid model name.')
 
     # Extract test and target data.
     data_test = data['test']
     data_test_target = data['test_target']
     data_target_names = data['target_names']
 
-    # Create classifier, feature extractor and dim reducer names.
-    fappend = kwargs.get('fappend', None)
-    dim = kwargs.get('dim', None)
-    (cfname, vfname, dfname, figfname, reportname) = \
-        get_fnames(METHOD, model, dataset, dim, fappend)
-
     # Predict test data.
-    pred = predict(data_test, cfname, vfname, dfname=dfname)
+    pred = predict(data_test, dataset, model, **kwargs)
 
     # Evaluate predictions: metrics.
     class_report = metrics.classification_report(data_test_target, pred,
                                                  target_names=data_target_names)
     conf_matrix = metrics.confusion_matrix(data_test_target ,pred)
+
+    # Set up report and figure name, path.
+    fname_args = []
+    if dim:
+        fname_args.append(str(dim))
+    fname_args.append(fappend)
+    reportname = make_fname(METHOD, model, dataset, 'report', 'txt', *fname_args)
+    reportpath = os.path.join(REPORT_HOME, reportname)
+    figfname = make_fname(METHOD, model, dataset, 'confusion', 'png', *fname_args)
+    figpath = os.path.join(REPORT_HOME, figfname)
 
     # Print evaluations.
     report = 'Report File: %s\n' % reportname
@@ -283,7 +293,8 @@ def eval(data, dataset, model, **kwargs):
 
     if not os.path.exists(REPORT_HOME):
         os.makedirs(REPORT_HOME)
-    reportpath = os.path.join(REPORT_HOME, reportname)
+
+    # Write report.
     rf = open(reportpath, 'w')
     rf.write(report)
     rf.close()
@@ -312,7 +323,6 @@ def eval(data, dataset, model, **kwargs):
         plt.set_cmap('hot')
         plt.colorbar()
         plt.title(title)
-        figpath = os.path.join(REPORT_HOME, figfname)
         plt.savefig(figpath)
 
 
@@ -364,7 +374,13 @@ if __name__ == '__main__':
     else:
         df_min = opts.df_min
     df_max = opts.df_max
-    method_kwargs = {}
+    kwargs = dict(
+        dim=dim,
+        fappend=fappend,
+        df_min=df_min,
+        df_max=df_max,
+        confusion=confusion,
+    )
 
     ############################################################
     # Extract method specific options.
@@ -375,25 +391,25 @@ if __name__ == '__main__':
     # Load data.
     data = load_data(dataset)
 
-    # Create classifier, feature extractor and dim reducer names.
-    (cfname, vfname, dfname, _, _) = \
-        get_fnames(METHOD, model, dataset, dim, fappend)
+    # Create object file names.
+    fname_args = []
+    if dim:
+        fname_args.append(str(dim))
+    fname_args.append(fappend)
+    mdl_fname = make_fname(METHOD, model, dataset, 'mdl', 'pk', *fname_args)
+    vec_fname = make_fname(METHOD, model, dataset, 'vec', 'pk', *fname_args)
+    dim_fname = make_fname(METHOD, model, dataset, 'dim', 'pk', *fname_args)
+    mdl_path = os.path.join(MODEL_HOME,mdl_fname)
+    vec_path = os.path.join(MODEL_HOME,vec_fname)
+    dim_path = os.path.join(MODEL_HOME,dim_fname)
 
-    # If we are specified to overwrite, or if required files missing, train and
-    # store classifier components.
-    cfpath = os.path.join(MODEL_HOME,cfname)
-    vfpath = os.path.join(MODEL_HOME,vfname)
-    model_files_present = os.path.isfile(cfpath) and os.path.isfile(vfpath)
-    if dfname:
-        dfpath = os.path.join(MODEL_HOME,dfname)
-        dim_files_present = os.path.isfile(dfpath)
-    else:
-        dim_files_present = True
-    if overwrite or not model_files_present or not dim_files_present:
-        train(data, dataset, model, dim=dim, fappend=fappend,
-              df_min=df_min, df_max=df_max, **method_kwargs)
+    model_files_present = os.path.isfile(mdl_path) and os.path.isfile(vec_path)
+    if dim:
+        dim_files_present = model_files_present and os.path.isfile(dim_path)
 
+    if overwrite or not model_files_present:
+        train(data, dataset, model, **kwargs)
 
     # Evaluate classifier.
-    eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)
+    eval(data, dataset, model, **kwargs)
 

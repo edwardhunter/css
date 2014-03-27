@@ -36,20 +36,22 @@ METHOD = ''
 MODELS = ()
 
 
-def train(data, dataset, no_components, no_runs, **kwargs):
+def train(data, dataset, model, no_components, no_runs, **kwargs):
     """
     Train and store feature extractor, dimension reducer and unsupervised
     model.
     @param data: training and testing dataset dictionary.
     @param dataset: dataset name string, valid key to data.
     @param model: model name string.
+    @param no_components: number of model components.
+    @param no_runs: number of training runs.
     """
 
     # Verify input parameters.
     if not isinstance(data, dict):
         raise ValueError('Invalid data dictionary.')
 
-    if not isinstance(dataset, str):
+    if not isinstance(dataset, str) or dataset not in DATASETS:
         raise ValueError('Invalid dataset.')
 
     if not isinstance(model,str) or model not in MODELS:
