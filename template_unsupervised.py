@@ -86,7 +86,7 @@ def train(data, dataset, no_components, no_runs, **kwargs):
     )
 
     # Loop model.
-    print 'Learning unsupervised model...'
+    print 'Learning unsupervised model, %i runs...' % no_runs
     for i in range(no_runs):
         starttime = time.time()
         ############################################################
