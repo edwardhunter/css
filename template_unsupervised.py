@@ -99,7 +99,7 @@ def train(data, dataset, no_components, no_runs, **kwargs):
         results['scores'].append(scores_i)
         results['sizes'].append(sizes_i)
 
-        print 'Run %i/%i in %f seconds.' % (i, no_runs, time.time() - starttime)
+        print 'Run %i/%i in %f seconds.' % (i+1, no_runs, time.time() - starttime)
     ############################################################
 
     # Create object file names.

@@ -98,7 +98,7 @@ def train(data, dataset, model, no_components, no_runs, **kwargs):
         results['scores'].append(scores_i)
         results['sizes'].append(sizes_i)
 
-        print 'Run %i/%i in %f seconds.' % (i, no_runs, time.time() - starttime)
+        print 'Run %i/%i in %f seconds.' % (i+1, no_runs, time.time() - starttime)
     ############################################################
 
     # Create object file names.
@@ -161,7 +161,79 @@ def eval(dataset, model, no_components, **kwargs):
     ############################################################
     # Create report data.
     ############################################################
-    # TODO: create reports and plots.
+
+    # Retrieve the clusters and similarity sequences.
+    # Find the best solution.
+    similarities = results['scores']
+    models = results['models']
+    best_scores = [s[-1] for s in similarities]
+    best_idx = np.argsort(best_scores)[-1]
+    best_cluster_sizes = results['sizes'][best_idx]
+
+    if not os.path.exists(REPORT_HOME):
+        os.makedirs(REPORT_HOME)
+    fname_args = []
+    fname_args.append(str(no_components))
+    fname_args.append(kwargs.get('fappend',''))
+
+    # Plot similarity curves.
+    plt.cla()
+    for y in similarities:
+        x = range(len(y))
+        plt.plot(x,y,'k-')
+        b = [0,y[-1]]
+        a = [len(y)-1, len(y)-1]
+        plt.plot(a,b,'r:')
+        plt.xlabel('Iteration')
+        plt.ylabel('Total Cosine Similarity')
+    title_str = '%s, %s, %s' % \
+                    ('Cosine Similarity Curves', model, dataset)
+    plt.title(title_str)
+    fname = make_fname(METHOD, model, dataset, 'simcurves', 'png', *fname_args)
+    fpath = os.path.join(REPORT_HOME,fname)
+    plt.savefig(fpath)
+
+    # Plotting sorted best similarities for the ensemble.
+    plt.cla()
+    best_sims = [x[-1] for x in similarities]
+    best_sims.sort(reverse=True)
+    x = range(len(best_sims))
+    plt.plot(x, best_sims, 'r-')
+    plt.xlabel('Sorted Runs')
+    plt.ylabel('Total Cosine Similarity')
+    title_str = '%s\n%s, %s' % \
+                ('Sorted Ensemble Solution Cosine Similarities', model, dataset)
+    plt.title(title_str)
+    fname = make_fname(METHOD, model, dataset, 'ensemble', 'png', *fname_args)
+    fpath = os.path.join(REPORT_HOME,fname)
+    plt.savefig(fpath)
+
+    # Plotting cluster vectors.
+    mu = models[best_idx]
+    feature_names = vectorizer.get_feature_names()
+    for i in range(no_components):
+        plt.cla()
+        sort_idx = np.argsort(mu[i,:])[-10:]
+        sort_mu = mu[i,sort_idx]
+        for j in range(len(sort_mu)):
+            x = [sort_idx[j], sort_idx[j]]
+            y = [0, 1]
+            plt.plot(x,y,'r-')
+        y = mu[i,:]
+        x = range(len(y))
+        plt.plot(x,y,'k-')
+        plt.axis([0, len(y), 0, 1])
+        plt.xlabel('Term Feature')
+        plt.ylabel('Cosine Similarity to Cluster Centroid')
+        title_str = 'Optimal Solution Vector, Cluster %i, %i Documents\n%s, %s' % \
+                    (i, best_cluster_sizes[i], model, dataset)
+        plt.title(title_str)
+        for k, idx in enumerate(sort_idx[::-1]):
+            name = feature_names[idx]
+            plt.text(idx, 0.95-(k*0.035), name)
+        fname = make_fname(METHOD, model, dataset, 'cluster%i' % i, 'png', *fname_args)
+        fpath = os.path.join(REPORT_HOME,fname)
+        plt.savefig(fpath)
     ############################################################
 
 
