@@ -1,5 +1,5 @@
 CSS Package for Python Computational Social Science
-===================================================
+---------------------------------------------------
 
 **Introduction**
 
@@ -9,7 +9,7 @@ learning algorithms for Computational Social Science applications
 in research and coursework. It was first used as courseware
 in UCSD's Soc-211 "Introduction to Computational
 Methods in Social Science," in Spring 2014. Algorithms are based
-on scikit-learn and original implementations. See below for
+on scikit-learn and some original implementations. See below for
 instructions on installing dependencies on various operating systems.
 
 **Copyright**
