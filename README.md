@@ -1,8 +1,7 @@
 CSS Package for Python Computational Social Science
 ===================================================
 
-Introduction
-------------
+**Introduction**
 
 This is the readme file for the python css package,
 developed by Edward Hunter for testing and evaluating machine
@@ -13,8 +12,7 @@ Methods in Social Science," in Spring 2014. Algorithms are based
 on scikit-learn and original implementations. See below for
 instructions on installing dependencies on various operating systems.
 
-Copyright
----------
+**Copyright**
 
 Copyright (C) 2014 Edward Hunter
 edward.a.hunter@gmail.com
@@ -35,7 +33,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Installing Dependencies and Setup
-=================================
+---------------------------------
+
+**Dependencies**
 
 The following software is required or advised for use of this package:
 
@@ -54,28 +54,27 @@ dependencies.
 10. nltk: Python natural language processing library.
 11. BeautifulSoup4: High level Python HTML parsing library.
 
-Current Tested Versions
------------------------
+**Current Tested Versions**
 
 TODO
 
-Installation on Mac OS X and Linux
-----------------------------------
+**Installation on Mac OS X**
 
 TODO
 
-Installation on Windows
------------------------
+**Installation on Linux**
 
 TODO
 
-Making a Github Account and Cloning the CSS Repository
-------------------------------------------------------
+**Installation on Windows**
 
 TODO
 
-Testing the Installation
-------------------------
+**Making a Github Account and Cloning the CSS Repository**
+
+TODO
+
+**Testing the Installation**
 
 TODO
 
