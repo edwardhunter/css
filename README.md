@@ -5,7 +5,7 @@ CSS Package for Python Computational Social Science
 
 This is the readme file for the python css package,
 developed by Edward Hunter for testing and evaluating machine
-learning algorithms for Computational Social Science application
+learning algorithms for Computational Social Science applications
 in research and coursework. It was first used as courseware
 in UCSD's Soc-211 "Introduction to Computational
 Methods in Social Science," in Spring 2014. Algorithms are based
