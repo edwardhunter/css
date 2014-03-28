@@ -63,6 +63,7 @@ from sklearn.datasets.twenty_newsgroups import fetch_20newsgroups
 from sklearn.datasets.twenty_newsgroups import download_20newsgroups
 from sklearn.grid_search import GridSearchCV
 from sklearn.utils.extmath import density
+from sklearn.cluster import DBSCAN
 
 # Spherical k means support.
 from spkm import spkmeans

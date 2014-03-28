@@ -363,6 +363,10 @@ def load_unsupervised_data(name, data_home=DATA_HOME):
         target=_target,
         target_names=data['target_names']
     )
+    print '\n Loaded for unsupervised learning.'
+    print 'Total unsupervised data size: %i' % len(_data)
+
+
     return combined_data
 
 

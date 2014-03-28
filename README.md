@@ -45,20 +45,29 @@ Installing Dependencies and Setup
 
 The following software is required or advised for use of this package:
 
+Required:
+
 1. Python: Version 2.7.6 is used and tested.
-2. A decent source code editor. Edward recommends PyCharm.
-3. git: Distributed source code control for access to this repository.
-4. easy_install/setuptools: Python package installer. Part of the
+2. numpy: Numerical Python library. Has additional dependencies.
+3. scipy: Scientific Python library extending numpy. Has additional
+dependencies.
+4. scikit-learn: Python machine learning library.
+5. matplotlib: Graphics and visualization Python library. Has additional
+dependencies.
+6. nltk: Python natural language processing library.
+7. BeautifulSoup4: High level Python HTML parsing library.
+
+Highly Recommended:
+
+1. A decent source code editor. Edward recommends PyCharm.
+2. git: Distributed source code control for access to this repository.
+3. easy_install/setuptools: Python package installer. Part of the
 setuptools 3rd party module that extends Python's native distutils module.
-5. pip: Better package installer improving on easy_install.
-6. virtualenv and virtualenvwrapper: Support for Python virtual environments.
-7. numpy: Numerical Python library. Has additional dependencies.
-8. scipy: Scientific Python library extending numpy. Has additional
-dependencies.
-9. matplotlib: Graphics and visualization Python library. Has additional
-dependencies.
-10. nltk: Python natural language processing library.
-11. BeautifulSoup4: High level Python HTML parsing library.
+4. pip: Better package installer improving on easy_install.
+5. virtualenv and virtualenvwrapper: Support for Python virtual environments.
+
+We will proceed with install instructions assuming all of these packages
+are available.
 
 **Current Tested Versions**
 
@@ -84,3 +93,6 @@ TODO
 
 TODO
 
+**Using Python Virtual Environments**
+
+TODO
