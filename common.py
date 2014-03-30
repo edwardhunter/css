@@ -83,37 +83,6 @@ from bs4 import BeautifulSoup
 MODEL_HOME = os.path.join('.', 'models')
 REPORT_HOME =  os.path.join('.', 'reports')
 
-
-def get_fnames(method, model, dataset, dim=None, appendix=None):
-    """
-    Return the file names of the stored classifier, feature extractor,
-    dimesnion reducer, confusion image and report.
-    @param: method the learning method, usually the module file name.
-    @param: model the learning model.
-    @param: dataset the dataset used.
-    @param: dim the reduce dimension to specified integer.
-    @param: appendix the optional appendix to the classifier and features extractor file names.
-    @return: 5-tuple containing file names.
-    """
-
-    base_name = '%s_%s_%s' % (method, model, dataset)
-
-    if dim:
-        base_name = '%s_%i' % (base_name, dim)
-
-    if appendix:
-        base_name = '%s_%s' % (base_name, appendix)
-
-    cfname = '%s_clf' % (base_name)
-    vfname = '%s_vec' % (base_name)
-    dfname = '%s_dim' % (base_name)
-    figfname = '%s_confusion.png' % (base_name)
-    reportfname = '%s_report.txt' % (base_name)
-    if not dim:
-        dfname = None
-
-    return (cfname, vfname, dfname, figfname, reportfname)
-
 def make_fname(method, model, dataset, suffix, ext=None, *args):
     """
     Return filename for objects to be stored.
