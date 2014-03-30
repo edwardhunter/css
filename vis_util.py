@@ -188,8 +188,6 @@ def project_data(x, mu, labels):
     cdata = []
     clabels = []
 
-    print mu.shape
-
     for i in set(labels):
         x_i = x[np.argwhere(labels==i),:][:,0,:]
         cdata.append(x_i)
