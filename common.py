@@ -47,11 +47,13 @@ from collections import Counter
 
 # Import numpy for vector manipulation.
 import numpy as np
+import scipy as sp
 
 # Import scikit modules for learning routines.
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import GaussianNB
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors.nearest_centroid import NearestCentroid
@@ -63,7 +65,10 @@ from sklearn.datasets.twenty_newsgroups import fetch_20newsgroups
 from sklearn.datasets.twenty_newsgroups import download_20newsgroups
 from sklearn.grid_search import GridSearchCV
 from sklearn.utils.extmath import density
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import SpectralClustering
+from sklearn.cluster import Ward
+from sklearn.manifold import MDS
+from sklearn.metrics import silhouette_samples
 
 # Spherical k means support.
 from spkm import spkmeans
@@ -74,10 +79,10 @@ import matplotlib.pyplot as plt
 # Import BeautifulSoup for HTML parsing.
 from bs4 import BeautifulSoup
 
-
 # Default model directory.
 MODEL_HOME = os.path.join('.', 'models')
 REPORT_HOME =  os.path.join('.', 'reports')
+
 
 def get_fnames(method, model, dataset, dim=None, appendix=None):
     """

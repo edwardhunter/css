@@ -218,7 +218,7 @@ def predict(input_data, dataset, model, **kwargs):
 
     # Compute features and predict.
     x_test = vectorizer.transform(input_data)
-    if dfname:
+    if dim:
         x_test = fselector.transform(x_test)
         if fselector.__normalize:
             x_test = normalize(x_test)
@@ -370,29 +370,35 @@ if __name__ == '__main__':
     else:
         df_min = opts.df_min
     df_max = opts.df_max
-    method_kwargs = {}
+    kwargs = dict(
+        dim=dim,
+        fappend=fappend,
+        df_min=df_min,
+        df_max=df_max,
+        confusion=confusion,
+    )
 
     # Load data.
     data = load_data(dataset)
 
-    # Create classifier, feature extractor and dim reducer names.
-    (cfname, vfname, dfname, _, _) = \
-        get_fnames(METHOD, model, dataset, dim, fappend)
+    # Create object file names.
+    fname_args = []
+    if dim:
+        fname_args.append(str(dim))
+    fname_args.append(fappend)
+    mdl_fname = make_fname(METHOD, model, dataset, 'mdl', 'pk', *fname_args)
+    vec_fname = make_fname(METHOD, model, dataset, 'vec', 'pk', *fname_args)
+    dim_fname = make_fname(METHOD, model, dataset, 'dim', 'pk', *fname_args)
+    mdl_path = os.path.join(MODEL_HOME,mdl_fname)
+    vec_path = os.path.join(MODEL_HOME,vec_fname)
+    dim_path = os.path.join(MODEL_HOME,dim_fname)
 
-    # If we are specified to overwrite, or if required files missing, train and
-    # store classifier components.
-    cfpath = os.path.join(MODEL_HOME,cfname)
-    vfpath = os.path.join(MODEL_HOME,vfname)
-    model_files_present = os.path.isfile(cfpath) and os.path.isfile(vfpath)
-    if dfname:
-        dfpath = os.path.join(MODEL_HOME,dfname)
-        dim_files_present = os.path.isfile(dfpath)
-    else:
-        dim_files_present = True
-    if overwrite or not model_files_present or not dim_files_present:
-        train(data, dataset, model, dim=dim, fappend=fappend,
-              df_min=df_min, df_max=df_max, **method_kwargs)
+    model_files_present = os.path.isfile(mdl_path) and os.path.isfile(vec_path)
+    if dim:
+        dim_files_present = model_files_present and os.path.isfile(dim_path)
+
+    if overwrite or not model_files_present:
+        train(data, dataset, model, **kwargs)
 
     # Evaluate classifier.
-    eval(data, dataset, model, dim=dim, fappend=fappend, confusion=confusion)
-
+    eval(data, dataset, model, **kwargs)
