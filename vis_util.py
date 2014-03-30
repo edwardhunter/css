@@ -198,11 +198,6 @@ def project_data(x, mu, labels):
     pdata = np.dot(data, mu.T)
     plabels = np.concatenate(clabels)
 
-    print data.shape
-    print pdata.shape
-    print plabels.shape
-
-
     for i in range(pdata.shape[0]):
         norm = np.linalg.norm(pdata[i,:])
         if norm > 0:
