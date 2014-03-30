@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from common import *
 
 # Import cluster visualization utilities.
-from vis_util import *
+from vis_utils import *
 
 # Define method and models available.
 METHOD = 'Cluster'

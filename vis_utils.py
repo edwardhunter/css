@@ -2,7 +2,7 @@
 
 """
 @package css
-@file css/vis_util.py
+@file css/vis_utils.py
 @author Edward Hunter
 @brief Visualization utilities.
 """
