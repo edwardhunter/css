@@ -69,6 +69,7 @@ from sklearn.cluster import SpectralClustering
 from sklearn.cluster import Ward
 from sklearn.manifold import MDS
 from sklearn.metrics import silhouette_samples
+from sklearn.metrics import silhouette_score
 
 # Spherical k means support.
 from spkm import spkmeans

@@ -36,6 +36,14 @@ def cluster_vectors(mu, no_components, sizes, feature_names, no_top, method,
                     model, dataset):
     """
     # Plot cluster vectors.
+    @param mu: xx.
+    @param no_components: xx.
+    @param sizes: xx.
+    @param feature_names: xx.
+    @param no_top: xx.
+    @param method: xx.
+    @param model: xx.
+    @param dataset: xx.
     """
     for i in range(no_components):
         plt.cla()
@@ -65,6 +73,11 @@ def cluster_vectors(mu, no_components, sizes, feature_names, no_top, method,
 def cluster_ensesmble_similarities(similarities, no_components, method, model, dataset):
     """
     # Plot sorted best similarities for the ensemble.
+    @param similarities: xx.
+    @param no_components: xx.
+    @param method: xx.
+    @param model: xx.
+    @param dataset: xx.
     """
     plt.cla()
     best_sims = [x[-1] for x in similarities]
@@ -79,9 +92,15 @@ def cluster_ensesmble_similarities(similarities, no_components, method, model, d
     fpath = os.path.join(REPORT_HOME,fname)
     plt.savefig(fpath)
 
+
 def cluster_sim_curves(similarities, no_components, method, model, dataset):
     """
     Plot similarity curves.
+    @param similarities: xx.
+    @param no_components: xx.
+    @param method: xx.
+    @param model: xx.
+    @param dataset: xx.
     """
     plt.cla()
     for y in similarities:
@@ -99,19 +118,24 @@ def cluster_sim_curves(similarities, no_components, method, model, dataset):
     plt.savefig(fpath)
 
 
-
-def cluster_silhouettes(x, labels, method, model, dataset):
+def cluster_silhouettes(x, mu, labels, method, model, dataset, project=True):
     """
     Plot cluster silhouettes.
+    @param x: xx.
+    @param labels: xx.
+    @param method: xx.
+    @param model: xx.
+    @param dataset: xx.
+    @param project: xx.
     """
-    #similarities = data['scores']
-    #x = data['data']
-    #best_scores = [s[-1] for s in similarities]
-    #best_idx = np.argsort(best_scores)[-1]
-    #best_labels = data['labels'][best_idx]
+
+    if project:
+        x, labels = project_data(x, mu, labels)
+
     no_components = len(set(labels))
 
     sil = silhouette_samples(x, labels)
+    #sil = silhouette_score(x, labels)
     s = np.ndarray(shape=(0,1))
     counts = []
     xticks = []
@@ -121,7 +145,7 @@ def cluster_silhouettes(x, labels, method, model, dataset):
         idx = np.argwhere(labels==i)
         count = idx.shape[0]
         xticks.append(xmax+count/2)
-        xlabels.append('%i\nn=%i'%(i,count))
+        xlabels.append(r'$C_%i$' % i)
         xmax += count
         counts.append(count)
         s_i = np.sort(sil[idx], axis=0)
@@ -133,9 +157,11 @@ def cluster_silhouettes(x, labels, method, model, dataset):
     xval = 0
     ymin = min(np.min(s)*1.2,0)
     ymax = max(np.max(s)*1.2,0)
-    for i in range(len(counts)-1):
+    for i in range(len(counts)):
+        plt.text(xticks[i], ymax*(0.95-0.035*i), str(counts[i]), horizontalalignment='center')
         xval += counts[i]
-        plt.plot([xval,xval],[ymin,ymax],':r')
+        if i < len(counts)-1:
+            plt.plot([xval,xval],[ymin,ymax],':r')
     plt.plot([0, xmax],[0, 0],':r')
     plt.axis([0,xmax,ymin,ymax])
     plt.xlabel('Samples by Cluster')
@@ -146,3 +172,42 @@ def cluster_silhouettes(x, labels, method, model, dataset):
     fname = make_fname(method, model, dataset, suffix,'png')
     fpath = os.path.join(REPORT_HOME,fname)
     plt.savefig(fpath)
+
+
+def project_data(x, mu, labels):
+    """
+    Project and high dimensional data onto a low dimensional
+    hypersphere with dimensions = no clusters.
+    @param x: xxx.
+    @param mu: xxx.
+    @param labels: xxx.
+    @return pdata plabels: xxx.
+    """
+
+    x = x.toarray()
+    cdata = []
+    clabels = []
+
+    print mu.shape
+
+    for i in set(labels):
+        x_i = x[np.argwhere(labels==i),:][:,0,:]
+        cdata.append(x_i)
+        clabels.append(np.array([i]*x_i.shape[0]))
+    data = np.concatenate(cdata)
+    pdata = np.dot(data, mu.T)
+    plabels = np.concatenate(clabels)
+
+    print data.shape
+    print pdata.shape
+    print plabels.shape
+
+
+    for i in range(pdata.shape[0]):
+        norm = np.linalg.norm(pdata[i,:])
+        if norm > 0:
+            pdata[i,:] = pdata[i,:] / norm
+
+    return pdata, plabels
+
+

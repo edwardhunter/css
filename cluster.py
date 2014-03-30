@@ -189,7 +189,7 @@ def eval(dataset, model, no_components, **kwargs):
     ############################################################
     # Create report data.
     ############################################################
-    cluster_silhouettes(x, best_labels, METHOD, model, dataset)
+    cluster_silhouettes(x, mu, best_labels, METHOD, model, dataset)
     cluster_sim_curves(similarities, no_components, METHOD, model, dataset)
     cluster_ensesmble_similarities(similarities, no_components, METHOD, model,
                                    dataset)
