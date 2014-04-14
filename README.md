@@ -83,7 +83,49 @@ TODO
 
 **Installation on Windows**
 
-TODO
+Setting up git
+
+a) Installing github on Windows
+
+1)  Go to the following link: https://code.google.com/p/msysgit/downloads/detail?name=Git-1.9.0-preview20140217.exe&can=2&q=
+2)  Click on download GitHub for Windows
+3)  Double click on the installer and follow the instructions
+
+b)Setting the lab directory
+
+1) Open command prompt(start-> in the search bar type cmd and hit enter)
+2) Navigate to the directory where you want to download all the files
+3) Type the following command in your command prompt "git clone https://github.com/edwardhunter/soc290.git"
+4) if you the following message "Checking connectivity... done." they you have downloaded all the required files
+
+Install python and required dependencies
+
+1) Go to the following link : https://code.google.com/p/pythonxy/wiki/Downloads
+2) Download the recent version of python executable "Python(x,y)-2.7.6.0.exe"
+3) Click the installer and follow the instructions
+4) Make sure you have all the required packages installed typing following command "pip freeze",
+ you might see other packages as well but make sure you have following packages installed:
+PyYAML==3.10
+beautifulsoup4==4.3.2
+matplotlib==1.1.1
+nltk==2.0.4
+numpy==1.8.0
+scikit-learn==0.14.1
+scipy==0.13.2
+
+
+Installing python Editor
+
+There are lots of options for python editors, and here is one of each editor
+
+Pycharm (Gui editor)
+
+1) Go to the following link http://www.jetbrains.com/pycharm/download/ and download the free Community Edition
+2) Click on the installer and follow the instructions
+3) Once Pycharm has been installed , you can open it and create a new project
+4) Point it to the location where you have downloaded all the code git
+5) Sometimes Pycharm  fails to locate the python interpreter that we have installed , Just point it to the right location.
+Usually python interpreter will installed at "c:\Python27\"
 
 **Making a Github Account and Cloning the CSS Repository**
 
@@ -96,3 +138,5 @@ TODO
 **Using Python Virtual Environments**
 
 TODO
+
+

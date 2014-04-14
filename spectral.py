@@ -4,7 +4,7 @@
 
 
 from common import *
-from vis_util import *
+from vis_utils import *
 
 # Load training/testing utilities.
 from data_utils import load_unsupervised_data, DATASETS
@@ -34,7 +34,7 @@ no_dims = x.shape[1]
 
 
 print 'Spectral clustering...'
-n_clusters = 6
+n_clusters = 4
 learner = SpectralClustering(n_clusters=n_clusters, gamma=0.01, affinity='rbf')
 learner.fit(x)
 labels = learner.labels_
@@ -43,7 +43,22 @@ labels = learner.labels_
 if not os.path.exists(REPORT_HOME):
         os.makedirs(REPORT_HOME)
 
-cluster_silhouettes(x, labels, 'Cluster', 'spectral', dataset)
+x = x.toarray()
+mu = np.zeros((n_clusters, no_dims))
+for i in range(x.shape[0]):
+    mu[labels[i],:] += x[i,:]
+for i in range(n_clusters):
+    mu_norm = np.linalg.norm(mu[i,:])
+    if mu_norm == 0.0:
+        print 'WARNING: Cluster %i empty!' % i
+    else:
+        mu[i,:] = mu[i,:]/mu_norm
+
+
+
+cluster_silhouettes(x, mu, labels, 'Cluster', 'spectral', dataset)
+cluster_vectors(mu, n_clusters, feature_names, 15,
+                    'Cluster', 'spectral', dataset)
 
 
 

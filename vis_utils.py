@@ -32,13 +32,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from common import *
 
 
-def cluster_vectors(mu, no_components, sizes, feature_names, no_top, method,
+def cluster_vectors(mu, no_components, feature_names, no_top, method,
                     model, dataset):
     """
     # Plot cluster vectors.
     @param mu: xx.
     @param no_components: xx.
-    @param sizes: xx.
     @param feature_names: xx.
     @param no_top: xx.
     @param method: xx.
@@ -184,7 +183,8 @@ def project_data(x, mu, labels):
     @return pdata plabels: xxx.
     """
 
-    x = x.toarray()
+    if not isinstance(x, np.ndarray):
+        x = x.toarray()
     cdata = []
     clabels = []
 
