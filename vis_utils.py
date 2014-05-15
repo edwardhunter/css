@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from common import *
 
 
+
 def cluster_vectors(mu, no_components, feature_names, no_top, method,
                     model, dataset):
     """
@@ -117,7 +118,7 @@ def cluster_sim_curves(similarities, no_components, method, model, dataset):
     plt.savefig(fpath)
 
 
-def cluster_silhouettes(x, mu, labels, method, model, dataset, project=True):
+def cluster_silhouettes(x, mu, labels, method, model, dataset, project=False):
     """
     Plot cluster silhouettes.
     @param x: xx.
@@ -128,13 +129,19 @@ def cluster_silhouettes(x, mu, labels, method, model, dataset, project=True):
     @param project: xx.
     """
 
+    if not isinstance(x, np.ndarray):
+        x = x.toarray()
+
     if project:
         x, labels = project_data(x, mu, labels)
 
+    no_docs = x.shape[0]
+    D = np.ones((no_docs, no_docs)) - x.dot(x.T)
+
     no_components = len(set(labels))
 
-    sil = silhouette_samples(x, labels)
-    #sil = silhouette_score(x, labels)
+    sil = silhouette_samples(D, labels, metric='precomputed')
+    cneg = np.argwhere(sil<0).shape[0]
     s = np.ndarray(shape=(0,1))
     counts = []
     xticks = []
@@ -163,7 +170,7 @@ def cluster_silhouettes(x, mu, labels, method, model, dataset, project=True):
             plt.plot([xval,xval],[ymin,ymax],':r')
     plt.plot([0, xmax],[0, 0],':r')
     plt.axis([0,xmax,ymin,ymax])
-    plt.xlabel('Samples by Cluster')
+    plt.xlabel('Samples by Cluster, %i Negative' % cneg)
     plt.ylabel('Silhouette Coefficient')
     plt.xticks(xticks,xlabels)
     plt.tight_layout()
@@ -185,22 +192,21 @@ def project_data(x, mu, labels):
 
     if not isinstance(x, np.ndarray):
         x = x.toarray()
-    cdata = []
-    clabels = []
 
-    for i in set(labels):
-        x_i = x[np.argwhere(labels==i),:][:,0,:]
-        cdata.append(x_i)
-        clabels.append(np.array([i]*x_i.shape[0]))
-    data = np.concatenate(cdata)
-    pdata = np.dot(data, mu.T)
-    plabels = np.concatenate(clabels)
+    no_docs, no_dims = x.shape
+    pdata = np.ndarray((0,mu.shape[0]))
+    plabels = np.array([])
+    for i in range(len(set(labels))):
+        idx = np.argwhere(labels==i)
+        data = x[idx][:,0,:]
+        no_i_docs = data.shape[0]
+        p = np.dot(data,mu.T)
+        pdata = np.append(pdata,p, 0)
+        plabels = np.append(plabels,[i]*no_i_docs,0)
 
-    for i in range(pdata.shape[0]):
-        norm = np.linalg.norm(pdata[i,:])
-        if norm > 0:
-            pdata[i,:] = pdata[i,:] / norm
+    for i in range(no_docs):
+        n = np.linalg.norm(pdata[i,:])
+        if n > 0:
+            pdata[i,:] /= n
 
     return pdata, plabels
-
-

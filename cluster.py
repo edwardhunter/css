@@ -193,7 +193,7 @@ def eval(dataset, model, no_components, **kwargs):
     cluster_sim_curves(similarities, no_components, METHOD, model, dataset)
     cluster_ensesmble_similarities(similarities, no_components, METHOD, model,
                                    dataset)
-    cluster_vectors(mu, no_components, feature_names, 15,
+    cluster_vectors(mu, no_components, feature_names, 20,
                     METHOD, model, dataset)
     ############################################################
 
