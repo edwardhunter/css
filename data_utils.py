@@ -52,7 +52,7 @@ REUTERS_CACHE_NAME = "reuters21578.pkz"
 REUTERS10_IDX_NAME = "reuters21578-10-idx.pkz"
 REUTERS10_CACHE_NAME = "reuters21578-10.pkz"
 
-DATASETS = ('20news','20news4', '20news5', 'reuters21578-10', 'senate5_1')
+DATASETS = ('20news','20news4', '20news5', 'reuters21578-10', 'senate_3_3')
 
 """
 20 Newsgroups Labels
